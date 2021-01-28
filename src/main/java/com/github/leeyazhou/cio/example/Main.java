@@ -23,10 +23,10 @@ public class Main {
 		byte[] httpResponseBytes = httpResponse.getBytes("UTF-8");
 
 		MessageProcessor messageProcessor = (request, writeProxy) -> {
-			logger.info("Message Received from socket: " + request.socketId);
+			logger.info("Message Received from socket: " + request.getChannelId());
 
 			Message response = writeProxy.getMessage();
-			response.socketId = request.socketId;
+			response.setChannelId(request.getChannelId());
 			response.writeToMessage(httpResponseBytes);
 
 			writeProxy.enqueue(response);

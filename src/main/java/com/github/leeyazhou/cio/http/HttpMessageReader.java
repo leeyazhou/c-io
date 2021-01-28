@@ -24,7 +24,7 @@ public class HttpMessageReader implements MessageReader {
 	public void init(MessageBuffer readMessageBuffer) {
 		this.messageBuffer = readMessageBuffer;
 		this.nextMessage = messageBuffer.getMessage();
-		this.nextMessage.metaData = new HttpHeaders();
+		this.nextMessage.setMetaData(new HttpHeaders());
 	}
 
 	@Override
@@ -40,11 +40,12 @@ public class HttpMessageReader implements MessageReader {
 
 		this.nextMessage.writeToMessage(byteBuffer);
 
-		int endIndex = HttpUtil.parseHttpRequest(this.nextMessage.sharedArray, this.nextMessage.offset,
-				this.nextMessage.offset + this.nextMessage.length, (HttpHeaders) this.nextMessage.metaData);
+		int endIndex = HttpUtil.parseHttpRequest(this.nextMessage.getSharedArray(), this.nextMessage.getOffset(),
+				this.nextMessage.getOffset() + this.nextMessage.getLength(),
+				(HttpHeaders) this.nextMessage.getMetaData());
 		if (endIndex != -1) {
 			Message message = this.messageBuffer.getMessage();
-			message.metaData = new HttpHeaders();
+			message.setMetaData(new HttpHeaders());
 
 			message.writePartialMessageToMessage(nextMessage, endIndex);
 

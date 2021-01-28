@@ -23,20 +23,20 @@ public class MessageTest {
 
 		int written = message.writeToMessage(byteBuffer);
 		assertEquals(4096, written);
-		assertEquals(4096, message.length);
-		assertSame(MessageBuffer.SMALL_MESSAGE_BUFFER, message.sharedArray);
+		assertEquals(4096, message.getLength());
+		assertSame(MessageBuffer.SMALL_MESSAGE_BUFFER, message.getSharedArray());
 
 		fill(byteBuffer, 124 * 1024);
 		written = message.writeToMessage(byteBuffer);
 		assertEquals(124 * 1024, written);
-		assertEquals(128 * 1024, message.length);
-		assertSame(MessageBuffer.MEDINUM_MESSAGE_BUFFER, message.sharedArray);
+		assertEquals(128 * 1024, message.getLength());
+		assertSame(MessageBuffer.MEDINUM_MESSAGE_BUFFER, message.getSharedArray());
 
 		fill(byteBuffer, (1024 - 128) * 1024);
 		written = message.writeToMessage(byteBuffer);
 		assertEquals(896 * 1024, written);
-		assertEquals(1024 * 1024, message.length);
-		assertSame(MessageBuffer.LARGE_MESSAGE_BUFFER, message.sharedArray);
+		assertEquals(1024 * 1024, message.getLength());
+		assertSame(MessageBuffer.LARGE_MESSAGE_BUFFER, message.getSharedArray());
 
 		fill(byteBuffer, 1);
 		written = message.writeToMessage(byteBuffer);

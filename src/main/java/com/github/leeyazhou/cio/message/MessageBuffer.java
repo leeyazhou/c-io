@@ -53,19 +53,19 @@ public class MessageBuffer {
 
 		Message message = new Message(this); // todo get from Message pool - caps memory usage.
 
-		message.sharedArray = SMALL_MESSAGE_BUFFER;
-		message.capacity = CAPACITY_SMALL;
-		message.offset = nextFreeSmallBlock;
-		message.length = 0;
+		message.setSharedArray(SMALL_MESSAGE_BUFFER);
+		message.setCapacity(CAPACITY_SMALL);
+		message.setOffset(nextFreeSmallBlock);
+		message.setLength(0);
 
 		return message;
 	}
 
 	public boolean expandMessage(Message message) {
-		if (message.capacity == CAPACITY_SMALL) {
+		if (message.getCapacity() == CAPACITY_SMALL) {
 			return moveMessage(message, this.smallMessageBufferFreeBlocks, this.mediumMessageBufferFreeBlocks,
 					MEDINUM_MESSAGE_BUFFER, CAPACITY_MEDIUM);
-		} else if (message.capacity == CAPACITY_MEDIUM) {
+		} else if (message.getCapacity() == CAPACITY_MEDIUM) {
 			return moveMessage(message, this.mediumMessageBufferFreeBlocks, this.largeMessageBufferFreeBlocks,
 					LARGE_MESSAGE_BUFFER, CAPACITY_LARGE);
 		} else {
@@ -79,13 +79,13 @@ public class MessageBuffer {
 		if (nextFreeBlock == -1)
 			return false;
 
-		System.arraycopy(message.sharedArray, message.offset, dest, nextFreeBlock, message.length);
+		System.arraycopy(message.getSharedArray(), message.getOffset(), dest, nextFreeBlock, message.getLength());
 
-		srcBlockQueue.put(message.offset); // free smaller block after copy
+		srcBlockQueue.put(message.getOffset()); // free smaller block after copy
 
-		message.sharedArray = dest;
-		message.offset = nextFreeBlock;
-		message.capacity = newCapacity;
+		message.setSharedArray(dest);
+		message.setOffset(nextFreeBlock);
+		message.setCapacity(newCapacity);
 		return true;
 	}
 

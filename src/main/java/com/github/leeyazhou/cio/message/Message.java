@@ -6,15 +6,15 @@ public class Message {
 
 	private MessageBuffer messageBuffer = null;
 
-	public long socketId = 0; // the id of source socket or destination socket, depending on whether is going
+	private long channelId = 0; // the id of source socket or destination socket, depending on whether is going
 								// in or out.
 
-	public byte[] sharedArray = null;
-	public int offset = 0; // offset into sharedArray where this message data starts.
-	public int capacity = 0; // the size of the section in the sharedArray allocated to this message.
-	public int length = 0; // the number of bytes used of the allocated section.
+	private byte[] sharedArray = null;
+	private int offset = 0; // offset into sharedArray where this message data starts.
+	private int capacity = 0; // the size of the section in the sharedArray allocated to this message.
+	private int length = 0; // the number of bytes used of the allocated section.
 
-	public Object metaData = null;
+	private Object metaData = null;
 
 	public Message(MessageBuffer messageBuffer) {
 		this.messageBuffer = messageBuffer;
@@ -95,6 +95,58 @@ public class Message {
 
 	public int writeToByteBuffer(ByteBuffer byteBuffer) {
 		return 0;
+	}
+
+	public byte[] getSharedArray() {
+		return sharedArray;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public void setLength(int length) {
+		this.length = length;
+	}
+
+	public long getChannelId() {
+		return channelId;
+	}
+
+	public void setChannelId(long channelId) {
+		this.channelId = channelId;
+	}
+
+	public void setSharedArray(byte[] sharedArray) {
+		this.sharedArray = sharedArray;
+	}
+
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	public int getCapacity() {
+		return capacity;
+	}
+
+	public void setMetaData(Object metaData) {
+		this.metaData = metaData;
+	}
+
+	public MessageBuffer getMessageBuffer() {
+		return messageBuffer;
+	}
+
+	public Object getMetaData() {
+		return metaData;
 	}
 
 }

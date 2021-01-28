@@ -25,14 +25,14 @@ public class MessageWriter {
 	}
 
 	public void write(ChannelContext socket, ByteBuffer byteBuffer) throws IOException {
-		byteBuffer.put(this.messageInProgress.sharedArray, this.messageInProgress.offset + this.bytesWritten,
-				this.messageInProgress.length - this.bytesWritten);
+		byteBuffer.put(this.messageInProgress.getSharedArray(), this.messageInProgress.getOffset() + this.bytesWritten,
+				this.messageInProgress.getLength() - this.bytesWritten);
 		byteBuffer.flip();
 
 		this.bytesWritten += socket.write(byteBuffer);
 		byteBuffer.clear();
 
-		if (bytesWritten >= this.messageInProgress.length) {
+		if (bytesWritten >= this.messageInProgress.getLength()) {
 			if (this.writeQueue.size() > 0) {
 				this.messageInProgress = this.writeQueue.remove(0);
 			} else {
