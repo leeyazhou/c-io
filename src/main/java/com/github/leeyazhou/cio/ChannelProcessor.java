@@ -142,7 +142,7 @@ public class ChannelProcessor implements Runnable {
 		List<Message> fullMessages = socket.getMessageReader().getMessages();
 		if (fullMessages.size() > 0) {
 			for (Message message : fullMessages) {
-				message.socketId = socket.getChannelId();
+				message.setChannelId(socket.getChannelId());
 				this.messageProcessor.process(message, this.writeProxy); // the message processor will eventually push
 																			// outgoing messages into an IMessageWriter
 																			// for this socket.
@@ -218,7 +218,7 @@ public class ChannelProcessor implements Runnable {
 	private void takeNewOutboundMessages() {
 		Message outMessage = null;
 		while ((outMessage = outboundMessageQueue.poll()) != null) {
-			ChannelContext socket = this.socketMap.get(outMessage.socketId);
+			ChannelContext socket = this.socketMap.get(outMessage.getChannelId());
 
 			if (socket != null) {
 				MessageWriter messageWriter = socket.getMessageWriter();
