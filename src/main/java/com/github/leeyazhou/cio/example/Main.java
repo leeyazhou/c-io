@@ -11,9 +11,6 @@ import com.github.leeyazhou.cio.http.HttpMessageReaderFactory;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageProcessor;
 
-/**
- * Created by jjenkov on 19-10-2015.
- */
 public class Main {
 
 	private static final Logger logger = LoggerFactory.getLogger(Main.class);

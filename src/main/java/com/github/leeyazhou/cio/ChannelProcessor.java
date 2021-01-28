@@ -25,21 +25,15 @@ import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
-public class SocketProcessor implements Runnable {
+public class ChannelProcessor implements Runnable {
+	private static final Logger logger = LoggerFactory.getLogger(ChannelProcessor.class);
+	private Queue<ChannelContext> inboundChannelQueue = null;
 
-	private static final Logger logger = LoggerFactory.getLogger(SocketProcessor.class);
-	private Queue<ChannelContext> inboundSocketQueue = null;
-
-	private MessageBuffer readMessageBuffer = null; // todo Not used now - but perhaps will be later - to check for
-													// space in the buffer before reading from sockets
-
-	private MessageBuffer writeMessageBuffer = null; // todo Not used now - but perhaps will be later - to check for
-														// space in the buffer before reading from sockets (space for
-														// more to write?)
-
+	private MessageBuffer readMessageBuffer = null;
+	private MessageBuffer writeMessageBuffer = null;
 	private MessageReaderFactory messageReaderFactory = null;
 
-	private Queue<Message> outboundMessageQueue = new LinkedList<>(); // todo use a better / faster queue.
+	private Queue<Message> outboundMessageQueue = new LinkedList<>();
 
 	private Map<Long, ChannelContext> socketMap = new HashMap<>();
 
@@ -51,15 +45,16 @@ public class SocketProcessor implements Runnable {
 	private MessageProcessor messageProcessor = null;
 	private WriteProxy writeProxy = null;
 
+	private boolean running = true;
 	private long nextSocketId = 16 * 1024; // start incoming socket ids from 16K - reserve bottom ids for pre-defined
 											// sockets (servers).
 
-	private Set<ChannelContext> emptyToNonEmptySockets = new HashSet<>();
-	private Set<ChannelContext> nonEmptyToEmptySockets = new HashSet<>();
+	private Set<ChannelContext> emptyToNonEmptyChannels = new HashSet<>();
+	private Set<ChannelContext> nonEmptyToEmptyChannels = new HashSet<>();
 
-	public SocketProcessor(MessageReaderFactory messageReaderFactory, MessageProcessor messageProcessor)
+	public ChannelProcessor(MessageReaderFactory messageReaderFactory, MessageProcessor messageProcessor)
 			throws IOException {
-		this.inboundSocketQueue = new ArrayBlockingQueue<>(1024);
+		this.inboundChannelQueue = new ArrayBlockingQueue<>(1024);
 
 		this.readMessageBuffer = new MessageBuffer();
 		this.writeMessageBuffer = new MessageBuffer();
@@ -74,7 +69,7 @@ public class SocketProcessor implements Runnable {
 	}
 
 	public void run() {
-		while (true) {
+		while (running) {
 			try {
 				executeCycle();
 			} catch (IOException e) {
@@ -90,34 +85,36 @@ public class SocketProcessor implements Runnable {
 	}
 
 	public void executeCycle() throws IOException {
-		takeNewSockets();
-		readFromSockets();
-		writeToSockets();
+		takeNewChannels();
+		readFromChannels();
+		writeToChannels();
 	}
 
-	public void takeNewSockets() throws IOException {
-		ChannelContext newSocket = null;
+	public void takeNewChannels() throws IOException {
+		ChannelContext newChanelContext = null;
 
-		while ((newSocket = this.inboundSocketQueue.poll()) != null) {
-			newSocket.setSocketId(nextSocketId++);
-			newSocket.getSocketChannel().configureBlocking(false);
+		while ((newChanelContext = this.inboundChannelQueue.poll()) != null) {
+			newChanelContext.setChannelId(nextSocketId++);
+			newChanelContext.getChannel().configureBlocking(false);
 
 			MessageReader messageReader = messageReaderFactory.createMessageReader();
 			messageReader.init(this.readMessageBuffer);
-			newSocket.setMessageReader(messageReader);
+			newChanelContext.setMessageReader(messageReader);
 
-			newSocket.setMessageWriter(new MessageWriter());
+			newChanelContext.setMessageWriter(new MessageWriter());
 
-			this.socketMap.put(newSocket.getSocketId(), newSocket);
+			this.socketMap.put(newChanelContext.getChannelId(), newChanelContext);
 
-			SelectionKey key = newSocket.getSocketChannel().register(this.readSelector, SelectionKey.OP_READ);
-			key.attach(newSocket);
+			SelectionKey key = newChanelContext.getChannel().register(this.readSelector, SelectionKey.OP_READ);
+			key.attach(newChanelContext);
 		}
 	}
 
-	public void readFromSockets() throws IOException {
+	public void readFromChannels() throws IOException {
+		logger.info("start read from channel");
 		int readReady = this.readSelector.selectNow();
-
+//		int readReady = this.readSelector.select();
+		logger.info("read ready size : {}", readReady);
 		if (readReady > 0) {
 			Set<SelectionKey> selectedKeys = this.readSelector.selectedKeys();
 			Iterator<SelectionKey> it = selectedKeys.iterator();
@@ -125,11 +122,16 @@ public class SocketProcessor implements Runnable {
 			while (it.hasNext()) {
 				SelectionKey key = it.next();
 
-				readFromSocket(key);
+				try {
+					readFromSocket(key);
+				} catch (Exception e) {
+					logger.error("", e);
+				} finally {
+					it.remove();
+				}
 
-				it.remove();
 			}
-			selectedKeys.clear();
+//			selectedKeys.clear();
 		}
 	}
 
@@ -140,7 +142,7 @@ public class SocketProcessor implements Runnable {
 		List<Message> fullMessages = socket.getMessageReader().getMessages();
 		if (fullMessages.size() > 0) {
 			for (Message message : fullMessages) {
-				message.socketId = socket.getSocketId();
+				message.socketId = socket.getChannelId();
 				this.messageProcessor.process(message, this.writeProxy); // the message processor will eventually push
 																			// outgoing messages into an IMessageWriter
 																			// for this socket.
@@ -149,15 +151,15 @@ public class SocketProcessor implements Runnable {
 		}
 
 		if (socket.isEndOfStreamReached()) {
-			logger.info("Socket closed: {}", socket.getSocketId());
-			this.socketMap.remove(socket.getSocketId());
+			logger.info("Socket closed: {}", socket.getChannelId());
+			this.socketMap.remove(socket.getChannelId());
 			key.attach(null);
 			key.cancel();
 			key.channel().close();
 		}
 	}
 
-	public void writeToSockets() throws IOException {
+	public void writeToChannels() throws IOException {
 
 		// Take all new messages from outboundMessageQueue
 		takeNewOutboundMessages();
@@ -168,8 +170,11 @@ public class SocketProcessor implements Runnable {
 		// Register all sockets that *have* data and which are not yet registered.
 		registerNonEmptySockets();
 
+		logger.info("start write out");
 		// Select from the Selector.
 		int writeReady = this.writeSelector.selectNow();
+//		int writeReady = this.writeSelector.select();
+		logger.info("write ready size : {}", writeReady);
 
 		if (writeReady > 0) {
 			Set<SelectionKey> selectionKeys = this.writeSelector.selectedKeys();
@@ -183,56 +188,58 @@ public class SocketProcessor implements Runnable {
 				socket.getMessageWriter().write(socket, this.writeByteBuffer);
 
 				if (socket.getMessageWriter().isEmpty()) {
-					this.nonEmptyToEmptySockets.add(socket);
+					this.nonEmptyToEmptyChannels.add(socket);
 				}
 
 				keyIterator.remove();
 			}
 
-			selectionKeys.clear();
+//			selectionKeys.clear();
 
 		}
 	}
 
 	private void registerNonEmptySockets() throws ClosedChannelException {
-		for (ChannelContext socket : emptyToNonEmptySockets) {
-			socket.getSocketChannel().register(this.writeSelector, SelectionKey.OP_WRITE, socket);
+		for (ChannelContext socket : emptyToNonEmptyChannels) {
+			socket.getChannel().register(this.writeSelector, SelectionKey.OP_WRITE, socket);
 		}
-		emptyToNonEmptySockets.clear();
+		emptyToNonEmptyChannels.clear();
 	}
 
 	private void cancelEmptySockets() {
-		for (ChannelContext socket : nonEmptyToEmptySockets) {
-			SelectionKey key = socket.getSocketChannel().keyFor(this.writeSelector);
+		for (ChannelContext socket : nonEmptyToEmptyChannels) {
+			SelectionKey key = socket.getChannel().keyFor(this.writeSelector);
 
 			key.cancel();
 		}
-		nonEmptyToEmptySockets.clear();
+		nonEmptyToEmptyChannels.clear();
 	}
 
 	private void takeNewOutboundMessages() {
-		Message outMessage = this.outboundMessageQueue.poll();
-		while (outMessage != null) {
+		Message outMessage = null;
+		while ((outMessage = outboundMessageQueue.poll()) != null) {
 			ChannelContext socket = this.socketMap.get(outMessage.socketId);
 
 			if (socket != null) {
 				MessageWriter messageWriter = socket.getMessageWriter();
 				if (messageWriter.isEmpty()) {
 					messageWriter.enqueue(outMessage);
-					nonEmptyToEmptySockets.remove(socket);
-					emptyToNonEmptySockets.add(socket); // not necessary if removed from nonEmptyToEmptySockets in prev.
-														// statement.
+					nonEmptyToEmptyChannels.remove(socket);
+					emptyToNonEmptyChannels.add(socket); // not necessary if removed from nonEmptyToEmptySockets in
+															// prev.
+															// statement.
 				} else {
 					messageWriter.enqueue(outMessage);
 				}
 			}
 
-			outMessage = this.outboundMessageQueue.poll();
 		}
 	}
 
 	public void add(ChannelContext channelContext) {
-		inboundSocketQueue.add(channelContext);
+		inboundChannelQueue.add(channelContext);
+//		readSelector.wakeup();
+//		writeSelector.wakeup();
 	}
 
 }

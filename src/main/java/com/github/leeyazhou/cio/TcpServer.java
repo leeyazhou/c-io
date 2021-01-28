@@ -18,6 +18,7 @@ public class TcpServer {
 	private MessageProcessor messageProcessor = null;
 	private ServerConfig serverConfig;
 	private final WorkerThread[] ioThreads;
+	private boolean running = true;
 
 	public TcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory,
 			MessageProcessor messageProcessor) {
@@ -41,9 +42,9 @@ public class TcpServer {
 	public void start() throws IOException {
 		logger.info("start tcp server, listen {}", serverConfig.getPort());
 
-		SocketProcessor[] processors = new SocketProcessor[ioThreads.length];
+		ChannelProcessor[] processors = new ChannelProcessor[ioThreads.length];
 		for (int i = 0; i < processors.length; i++) {
-			SocketProcessor processor = new SocketProcessor(messageReaderFactory, messageProcessor);
+			ChannelProcessor processor = new ChannelProcessor(messageReaderFactory, messageProcessor);
 			processors[i] = processor;
 			ioThreads[i].setTask(processor);
 		}
@@ -58,7 +59,9 @@ public class TcpServer {
 		connectorThread.setTask(connector);
 		connector.init();
 		connectorThread.start();
-
 	}
 
+	public void shutdown() {
+		this.running = false;
+	}
 }

@@ -9,9 +9,9 @@ import com.github.leeyazhou.cio.message.MessageWriter;
 
 public class ChannelContext {
 
-	private long socketId;
+	private long channelId;
 
-	private SocketChannel socketChannel = null;
+	private SocketChannel channel = null;
 	private MessageReader messageReader = null;
 	private MessageWriter messageWriter = null;
 
@@ -20,14 +20,14 @@ public class ChannelContext {
 	public ChannelContext() {
 	}
 
-	public ChannelContext(SocketChannel socketChannel) {
-		this.socketChannel = socketChannel;
+	public ChannelContext(SocketChannel channel) {
+		this.channel = channel;
 	}
 
 	public int read(ByteBuffer byteBuffer) throws IOException {
 		int bytesRead = 0;
 		int totalBytesRead = bytesRead;
-		while ((bytesRead = socketChannel.read(byteBuffer)) > 0) {
+		while ((bytesRead = channel.read(byteBuffer)) > 0) {
 			totalBytesRead += bytesRead;
 		}
 		if (bytesRead == -1) {
@@ -38,31 +38,31 @@ public class ChannelContext {
 	}
 
 	public int write(ByteBuffer byteBuffer) throws IOException {
-		int bytesWritten = this.socketChannel.write(byteBuffer);
+		int bytesWritten = this.channel.write(byteBuffer);
 		int totalBytesWritten = bytesWritten;
 
 		while (bytesWritten > 0 && byteBuffer.hasRemaining()) {
-			bytesWritten = this.socketChannel.write(byteBuffer);
+			bytesWritten = this.channel.write(byteBuffer);
 			totalBytesWritten += bytesWritten;
 		}
 
 		return totalBytesWritten;
 	}
 
-	public long getSocketId() {
-		return socketId;
+	public long getChannelId() {
+		return channelId;
 	}
 
-	public void setSocketId(long socketId) {
-		this.socketId = socketId;
+	public void setChannelId(long socketId) {
+		this.channelId = socketId;
 	}
 
-	public SocketChannel getSocketChannel() {
-		return socketChannel;
+	public SocketChannel getChannel() {
+		return channel;
 	}
 
-	public void setSocketChannel(SocketChannel socketChannel) {
-		this.socketChannel = socketChannel;
+	public void setChannel(SocketChannel socketChannel) {
+		this.channel = socketChannel;
 	}
 
 	public MessageReader getMessageReader() {

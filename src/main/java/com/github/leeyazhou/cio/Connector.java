@@ -10,16 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Connector implements Runnable {
-
 	private static final Logger logger = LoggerFactory.getLogger(Connector.class);
 	private final String host;
 	private final int tcpPort;
 
 	private ServerSocketChannel serverSocket = null;
-	private SocketProcessor[] processors;
+	private ChannelProcessor[] processors;
 	private AtomicInteger ioIndex = new AtomicInteger();
 
-	public Connector(String host, int tcpPort, SocketProcessor[] processors) {
+	public Connector(String host, int tcpPort, ChannelProcessor[] processors) {
 		this.tcpPort = tcpPort;
 		this.host = host;
 		this.processors = processors;
@@ -49,7 +48,7 @@ public class Connector implements Runnable {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
 				nextWoker().add(new ChannelContext(socketChannel));
-			} catch (IOException e) {
+			} catch (Exception e) {
 				logger.error("", e);
 			}
 
@@ -57,7 +56,7 @@ public class Connector implements Runnable {
 
 	}
 
-	private SocketProcessor nextWoker() {
+	private ChannelProcessor nextWoker() {
 		return processors[ioIndex.incrementAndGet() % processors.length];
 	}
 }
