@@ -1,6 +1,5 @@
 package com.github.leeyazhou.cio;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -9,16 +8,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Connector implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(Connector.class);
+public class Acceptor implements Runnable {
+	private static final Logger logger = LoggerFactory.getLogger(Acceptor.class);
 	private final String host;
 	private final int tcpPort;
 
 	private ServerSocketChannel serverSocket = null;
-	private ChannelProcessor[] processors;
+	private NioChannelProcessor[] processors;
 	private AtomicInteger ioIndex = new AtomicInteger();
 
-	public Connector(String host, int tcpPort, ChannelProcessor[] processors) {
+	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors) {
 		this.tcpPort = tcpPort;
 		this.host = host;
 		this.processors = processors;
@@ -36,7 +35,7 @@ public class Connector implements Runnable {
 			}
 			this.serverSocket.bind(address);
 			logger.info("开启ServerSocketChannel并绑定端口：{}", tcpPort);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error("开启ServerSocketChannel失败", e);
 		}
 	}
@@ -48,7 +47,7 @@ public class Connector implements Runnable {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
 				nextWoker().add(new ChannelContext(socketChannel));
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.error("", e);
 			}
 
@@ -56,7 +55,7 @@ public class Connector implements Runnable {
 
 	}
 
-	private ChannelProcessor nextWoker() {
+	private NioChannelProcessor nextWoker() {
 		return processors[ioIndex.incrementAndGet() % processors.length];
 	}
 }

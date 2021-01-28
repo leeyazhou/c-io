@@ -4,7 +4,7 @@ public class ServerConfig {
 	private String host;
 	private int port;
 	private int maxSocketSize = 2048;
-	private int ioThread = 8;
+	private int ioThread = 4;
 
 	public void setMaxSocketSize(int maxSocketSize) {
 		this.maxSocketSize = maxSocketSize;

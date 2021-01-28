@@ -9,10 +9,10 @@ import com.github.leeyazhou.cio.message.MessageProcessor;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.util.concurrent.WorkerThread;
 
-public class TcpServer {
+public class NioTcpServer {
 
-	private static final Logger logger = LoggerFactory.getLogger(TcpServer.class);
-	private Connector connector = null;
+	private static final Logger logger = LoggerFactory.getLogger(NioTcpServer.class);
+	private Acceptor connector = null;
 
 	private MessageReaderFactory messageReaderFactory = null;
 	private MessageProcessor messageProcessor = null;
@@ -20,7 +20,7 @@ public class TcpServer {
 	private final WorkerThread[] ioThreads;
 	private boolean running = true;
 
-	public TcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory,
+	public NioTcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory,
 			MessageProcessor messageProcessor) {
 		this.messageReaderFactory = messageReaderFactory;
 		this.messageProcessor = messageProcessor;
@@ -42,14 +42,14 @@ public class TcpServer {
 	public void start() throws IOException {
 		logger.info("start tcp server, listen {}", serverConfig.getPort());
 
-		ChannelProcessor[] processors = new ChannelProcessor[ioThreads.length];
+		NioChannelProcessor[] processors = new NioChannelProcessor[ioThreads.length];
 		for (int i = 0; i < processors.length; i++) {
-			ChannelProcessor processor = new ChannelProcessor(messageReaderFactory, messageProcessor);
+			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor);
 			processors[i] = processor;
 			ioThreads[i].setTask(processor);
 		}
 
-		this.connector = new Connector(serverConfig.getHost(), serverConfig.getPort(), processors);
+		this.connector = new Acceptor(serverConfig.getHost(), serverConfig.getPort(), processors);
 
 		for (WorkerThread worker : ioThreads) {
 			worker.start();

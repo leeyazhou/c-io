@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.leeyazhou.cio.ServerConfig;
-import com.github.leeyazhou.cio.TcpServer;
+import com.github.leeyazhou.cio.NioTcpServer;
 import com.github.leeyazhou.cio.http.HttpMessageReaderFactory;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageProcessor;
@@ -35,7 +35,7 @@ public class Main {
 		ServerConfig serverConfig = new ServerConfig();
 		serverConfig.setPort(9999);
 		serverConfig.setMaxSocketSize(2048);
-		TcpServer server = new TcpServer(serverConfig, new HttpMessageReaderFactory(), messageProcessor);
+		NioTcpServer server = new NioTcpServer(serverConfig, new HttpMessageReaderFactory(), messageProcessor);
 
 		server.start();
 

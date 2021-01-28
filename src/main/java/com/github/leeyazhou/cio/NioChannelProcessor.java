@@ -25,8 +25,8 @@ import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
-public class ChannelProcessor implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(ChannelProcessor.class);
+public class NioChannelProcessor implements Runnable {
+	private static final Logger logger = LoggerFactory.getLogger(NioChannelProcessor.class);
 	private Queue<ChannelContext> inboundChannelQueue = null;
 
 	private MessageBuffer readMessageBuffer = null;
@@ -52,7 +52,7 @@ public class ChannelProcessor implements Runnable {
 	private Set<ChannelContext> emptyToNonEmptyChannels = new HashSet<>();
 	private Set<ChannelContext> nonEmptyToEmptyChannels = new HashSet<>();
 
-	public ChannelProcessor(MessageReaderFactory messageReaderFactory, MessageProcessor messageProcessor)
+	public NioChannelProcessor(MessageReaderFactory messageReaderFactory, MessageProcessor messageProcessor)
 			throws IOException {
 		this.inboundChannelQueue = new ArrayBlockingQueue<>(1024);
 
@@ -112,15 +112,16 @@ public class ChannelProcessor implements Runnable {
 
 	public void readFromChannels() throws IOException {
 		logger.info("start read from channel");
-		int readReady = this.readSelector.selectNow();
-//		int readReady = this.readSelector.select();
+//		int readReady = this.readSelector.selectNow();
+		int readReady = this.readSelector.select();
 		logger.info("read ready size : {}", readReady);
 		if (readReady > 0) {
 			Set<SelectionKey> selectedKeys = this.readSelector.selectedKeys();
 			Iterator<SelectionKey> it = selectedKeys.iterator();
-
 			while (it.hasNext()) {
 				SelectionKey key = it.next();
+				logger.info("read selectionKey, valid:{}, readable:{}, writable:{}", key.isValid(), key.isReadable(),
+						key.isWritable());
 
 				try {
 					readFromSocket(key);
@@ -131,7 +132,7 @@ public class ChannelProcessor implements Runnable {
 				}
 
 			}
-//			selectedKeys.clear();
+			selectedKeys.clear();
 		}
 	}
 
@@ -143,9 +144,9 @@ public class ChannelProcessor implements Runnable {
 		if (fullMessages.size() > 0) {
 			for (Message message : fullMessages) {
 				message.setChannelId(socket.getChannelId());
-				this.messageProcessor.process(message, this.writeProxy); // the message processor will eventually push
-																			// outgoing messages into an IMessageWriter
-																			// for this socket.
+				this.messageProcessor.process(message, writeProxy); // the message processor will eventually push
+																	// outgoing messages into an IMessageWriter
+																	// for this socket.
 			}
 			fullMessages.clear();
 		}
@@ -193,8 +194,7 @@ public class ChannelProcessor implements Runnable {
 
 				keyIterator.remove();
 			}
-
-//			selectionKeys.clear();
+			selectionKeys.clear();
 
 		}
 	}
@@ -238,8 +238,7 @@ public class ChannelProcessor implements Runnable {
 
 	public void add(ChannelContext channelContext) {
 		inboundChannelQueue.add(channelContext);
-//		readSelector.wakeup();
-//		writeSelector.wakeup();
+		readSelector.wakeup();
 	}
 
 }
