@@ -5,21 +5,18 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.ChannelHandlerChain;
 import com.github.leeyazhou.cio.message.MessageProcessor;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.util.concurrent.WorkerThread;
 
 public class NioTcpServer {
-
 	private static final Logger logger = LoggerFactory.getLogger(NioTcpServer.class);
-	private Acceptor connector = null;
+	private Acceptor acceptor = null;
 
 	private MessageReaderFactory messageReaderFactory = null;
 	private MessageProcessor messageProcessor = null;
 	private ServerConfig serverConfig;
 	private final WorkerThread[] ioThreads;
-	private boolean running = true;
 
 	public NioTcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory,
 			MessageProcessor messageProcessor) {
@@ -42,27 +39,26 @@ public class NioTcpServer {
 
 	public void start() throws IOException {
 		logger.info("start tcp server, listen {}", serverConfig.getPort());
-		ChannelHandlerChain handlerChain = new ChannelHandlerChain();
 
 		NioChannelProcessor[] processors = new NioChannelProcessor[ioThreads.length];
 		for (int i = 0; i < processors.length; i++) {
-			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor,handlerChain);
+			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor);
 			processors[i] = processor;
 			ioThreads[i].setTask(processor);
 		}
-		this.connector = new Acceptor(serverConfig.getHost(), serverConfig.getPort(), processors,handlerChain);
+		this.acceptor = new Acceptor(serverConfig.getHost(), serverConfig.getPort(), processors);
 
 		for (WorkerThread worker : ioThreads) {
 			worker.start();
 		}
 
 		WorkerThread connectorThread = new WorkerThread();
-		connectorThread.setTask(connector);
-		connector.init();
+		connectorThread.setTask(acceptor);
+		acceptor.init();
 		connectorThread.start();
 	}
 
 	public void shutdown() {
-		this.running = false;
+		acceptor.shutdown();
 	}
 }

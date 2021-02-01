@@ -32,8 +32,8 @@ public class HttpMessageReader implements MessageReader {
 	}
 
 	@Override
-	public int read(ChannelHandlerContext socket, ByteBuffer byteBuffer) throws IOException {
-		int bytesRead = socket.read(byteBuffer);
+	public int read(ChannelHandlerContext context, ByteBuffer byteBuffer) throws IOException {
+		int bytesRead = context.read(byteBuffer);
 		logger.info("读取字节数:{}", bytesRead);
 		byteBuffer.flip();
 

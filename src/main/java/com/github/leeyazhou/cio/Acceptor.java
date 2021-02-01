@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.ChannelHandlerChain;
 import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
 import com.github.leeyazhou.cio.channel.NioSocketChannel;
 
@@ -16,17 +15,16 @@ public class Acceptor implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(Acceptor.class);
 	private final String host;
 	private final int tcpPort;
+	private boolean running = true;
 
 	private ServerSocketChannel serverSocket = null;
 	private NioChannelProcessor[] processors;
 	private AtomicInteger ioIndex = new AtomicInteger();
-	private ChannelHandlerChain handlerChain ;
 
-	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors, ChannelHandlerChain handlerChain) {
+	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors) {
 		this.tcpPort = tcpPort;
 		this.host = host;
 		this.processors = processors;
-		this.handlerChain = handlerChain;
 	}
 
 	public void init() {
@@ -48,7 +46,7 @@ public class Acceptor implements Runnable {
 
 	public void run() {
 
-		while (true) {
+		while (running) {
 			try {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
@@ -59,6 +57,11 @@ public class Acceptor implements Runnable {
 
 		}
 
+	}
+
+	public void shutdown() {
+		this.running = false;
+		logger.info("关闭Acceptor");
 	}
 
 	private NioChannelProcessor nextWoker() {

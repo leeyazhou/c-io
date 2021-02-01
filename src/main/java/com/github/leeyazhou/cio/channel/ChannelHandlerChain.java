@@ -4,6 +4,9 @@ public class ChannelHandlerChain {
 
 	private ChannelHandler channelHandler = new DefaultChannelHandler();
 
+	public ChannelHandlerChain(NioSocketChannel nioSocketChannel) {
+	}
+
 	public void fireChannelRegistered(ChannelHandlerContext context) {
 		channelHandler.channelRegistered(context);
 	}
@@ -23,4 +26,5 @@ public class ChannelHandlerChain {
 	public void fireChannelActive(ChannelHandlerContext channelContext) {
 		channelHandler.channelActive(channelContext);
 	}
+
 }

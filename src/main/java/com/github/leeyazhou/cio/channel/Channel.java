@@ -17,4 +17,8 @@ public interface Channel {
 	void configureBlocking(boolean blocking) throws IOException;
 	
 	boolean isActive();
+
+	void close(ChannelHandlerContext context);
+	
+	long getId();
 }

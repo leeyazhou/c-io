@@ -7,9 +7,6 @@ import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
 public class ChannelHandlerContext {
-
-	private long channelId;
-
 	private Channel channel = null;
 	private MessageReader messageReader = null;
 	private MessageWriter messageWriter = null;
@@ -32,7 +29,7 @@ public class ChannelHandlerContext {
 		if (bytesRead == -1) {
 			this.endOfStreamReached = true;
 		}
-
+		
 		return totalBytesRead;
 	}
 
@@ -46,14 +43,6 @@ public class ChannelHandlerContext {
 		}
 
 		return totalBytesWritten;
-	}
-
-	public long getChannelId() {
-		return channelId;
-	}
-
-	public void setChannelId(long socketId) {
-		this.channelId = socketId;
 	}
 
 	public Channel getChannel() {
@@ -88,4 +77,7 @@ public class ChannelHandlerContext {
 		this.endOfStreamReached = endOfStreamReached;
 	}
 
+	public void close() {
+		channel.close(this);
+	}
 }
