@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.leeyazhou.cio.channel.ChannelHandlerChain;
 import com.github.leeyazhou.cio.message.MessageProcessor;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.util.concurrent.WorkerThread;
@@ -41,15 +42,15 @@ public class NioTcpServer {
 
 	public void start() throws IOException {
 		logger.info("start tcp server, listen {}", serverConfig.getPort());
+		ChannelHandlerChain handlerChain = new ChannelHandlerChain();
 
 		NioChannelProcessor[] processors = new NioChannelProcessor[ioThreads.length];
 		for (int i = 0; i < processors.length; i++) {
-			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor);
+			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor,handlerChain);
 			processors[i] = processor;
 			ioThreads[i].setTask(processor);
 		}
-
-		this.connector = new Acceptor(serverConfig.getHost(), serverConfig.getPort(), processors);
+		this.connector = new Acceptor(serverConfig.getHost(), serverConfig.getPort(), processors,handlerChain);
 
 		for (WorkerThread worker : ioThreads) {
 			worker.start();

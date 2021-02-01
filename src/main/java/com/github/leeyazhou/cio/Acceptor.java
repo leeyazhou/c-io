@@ -8,6 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.leeyazhou.cio.channel.ChannelHandlerChain;
+import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
+import com.github.leeyazhou.cio.channel.NioSocketChannel;
+
 public class Acceptor implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(Acceptor.class);
 	private final String host;
@@ -16,11 +20,13 @@ public class Acceptor implements Runnable {
 	private ServerSocketChannel serverSocket = null;
 	private NioChannelProcessor[] processors;
 	private AtomicInteger ioIndex = new AtomicInteger();
+	private ChannelHandlerChain handlerChain ;
 
-	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors) {
+	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors, ChannelHandlerChain handlerChain) {
 		this.tcpPort = tcpPort;
 		this.host = host;
 		this.processors = processors;
+		this.handlerChain = handlerChain;
 	}
 
 	public void init() {
@@ -46,7 +52,7 @@ public class Acceptor implements Runnable {
 			try {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
-				nextWoker().add(new ChannelContext(socketChannel));
+				nextWoker().addChannel(new ChannelHandlerContext(new NioSocketChannel(socketChannel)));
 			} catch (Throwable e) {
 				logger.error("", e);
 			}

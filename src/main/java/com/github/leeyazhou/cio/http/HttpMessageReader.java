@@ -5,13 +5,17 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.leeyazhou.cio.ChannelContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageBuffer;
 import com.github.leeyazhou.cio.message.MessageReader;
 
 public class HttpMessageReader implements MessageReader {
-
+	
+	private static final Logger logger = LoggerFactory.getLogger(HttpMessageReader.class);
 	private MessageBuffer messageBuffer = null;
 
 	private List<Message> completeMessages = new ArrayList<Message>();
@@ -28,14 +32,14 @@ public class HttpMessageReader implements MessageReader {
 	}
 
 	@Override
-	public void read(ChannelContext socket, ByteBuffer byteBuffer) throws IOException {
-		@SuppressWarnings("unused")
+	public int read(ChannelHandlerContext socket, ByteBuffer byteBuffer) throws IOException {
 		int bytesRead = socket.read(byteBuffer);
+		logger.info("读取字节数:{}", bytesRead);
 		byteBuffer.flip();
 
 		if (byteBuffer.remaining() == 0) {
 			byteBuffer.clear();
-			return;
+			return bytesRead;
 		}
 
 		this.nextMessage.writeToMessage(byteBuffer);
@@ -53,6 +57,7 @@ public class HttpMessageReader implements MessageReader {
 			nextMessage = message;
 		}
 		byteBuffer.clear();
+		return bytesRead;
 	}
 
 	@Override

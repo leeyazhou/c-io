@@ -1,26 +1,25 @@
-package com.github.leeyazhou.cio;
+package com.github.leeyazhou.cio.channel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
-public class ChannelContext {
+public class ChannelHandlerContext {
 
 	private long channelId;
 
-	private SocketChannel channel = null;
+	private Channel channel = null;
 	private MessageReader messageReader = null;
 	private MessageWriter messageWriter = null;
 
 	private boolean endOfStreamReached = false;
 
-	public ChannelContext() {
+	public ChannelHandlerContext() {
 	}
 
-	public ChannelContext(SocketChannel channel) {
+	public ChannelHandlerContext(Channel channel) {
 		this.channel = channel;
 	}
 
@@ -57,11 +56,11 @@ public class ChannelContext {
 		this.channelId = socketId;
 	}
 
-	public SocketChannel getChannel() {
+	public Channel getChannel() {
 		return channel;
 	}
 
-	public void setChannel(SocketChannel socketChannel) {
+	public void setChannel(Channel socketChannel) {
 		this.channel = socketChannel;
 	}
 
