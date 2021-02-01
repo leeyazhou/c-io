@@ -5,45 +5,43 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.leeyazhou.cio.ChannelContext;
 
 public class MessageWriter {
 
+	private static final Logger logger = LoggerFactory.getLogger(MessageWriter.class);
 	private List<Message> writeQueue = new ArrayList<>();
-	private Message messageInProgress = null;
 	private int bytesWritten = 0;
 
 	public MessageWriter() {
 	}
 
 	public void enqueue(Message message) {
-		if (this.messageInProgress == null) {
-			this.messageInProgress = message;
-		} else {
-			this.writeQueue.add(message);
-		}
+		this.writeQueue.add(message);
 	}
 
 	public void write(ChannelContext socket, ByteBuffer byteBuffer) throws IOException {
-		byteBuffer.put(this.messageInProgress.getSharedArray(), this.messageInProgress.getOffset() + this.bytesWritten,
-				this.messageInProgress.getLength() - this.bytesWritten);
-		byteBuffer.flip();
-
-		this.bytesWritten += socket.write(byteBuffer);
-		byteBuffer.clear();
-
-		if (bytesWritten >= this.messageInProgress.getLength()) {
-			if (this.writeQueue.size() > 0) {
-				this.messageInProgress = this.writeQueue.remove(0);
-			} else {
-				this.messageInProgress = null;
-				// todo unregister from selector
-			}
+		if (writeQueue.isEmpty()) {
+			logger.info("没有数据输出");
+			return;
 		}
+		for (Message messageInProgress : writeQueue) {
+
+			byteBuffer.put(messageInProgress.getSharedArray(), messageInProgress.getOffset() + this.bytesWritten,
+					messageInProgress.getLength() - this.bytesWritten);
+			byteBuffer.flip();
+
+			this.bytesWritten += socket.write(byteBuffer);
+			byteBuffer.clear();
+		}
+
 	}
 
 	public boolean isEmpty() {
-		return this.writeQueue.isEmpty() && this.messageInProgress == null;
+		return this.writeQueue.isEmpty();
 	}
 
 }
