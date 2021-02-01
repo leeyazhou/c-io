@@ -101,7 +101,7 @@ public class NioChannelProcessor implements Runnable {
 
 	public void readFromChannels() throws IOException {
 		logger.info("start read from channel");
-		int readReady = this.readSelector.select();
+		int readReady = this.readSelector.select(1000);
 		logger.info("read ready size : {}", readReady);
 		if (readReady > 0) {
 			Iterator<SelectionKey> it = readSelector.selectedKeys().iterator();
