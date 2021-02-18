@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import com.github.leeyazhou.cio.channel.DefaultChannelContext;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageBuffer;
-import com.github.leeyazhou.cio.message.MessageProcessor;
 import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.message.MessageWriter;
@@ -39,22 +38,17 @@ public class NioChannelProcessor implements Runnable {
 	private ByteBuffer writeByteBuffer = ByteBuffer.allocate(1024 * 1024);
 	private Selector selector = null;
 
-	private MessageProcessor messageProcessor = null;
-	private WriteProxy writeProxy = null;
 
 	private boolean running = true;
 
-	public NioChannelProcessor(MessageReaderFactory messageReaderFactory, MessageProcessor messageProcessor)
+	public NioChannelProcessor(MessageReaderFactory messageReaderFactory)
 			throws IOException {
-		this.inboundChannelQueue = new ArrayBlockingQueue<>(1024);
+		this.inboundChannelQueue = new ArrayBlockingQueue<>(10240);
 
 		this.readMessageBuffer = new MessageBuffer();
 		this.writeMessageBuffer = new MessageBuffer();
-		this.writeProxy = new WriteProxy(writeMessageBuffer, this.outboundMessageQueue);
 
 		this.messageReaderFactory = messageReaderFactory;
-
-		this.messageProcessor = messageProcessor;
 
 		this.selector = Selector.open();
 	}
@@ -91,8 +85,7 @@ public class NioChannelProcessor implements Runnable {
 			MessageReader messageReader = messageReaderFactory.createMessageReader();
 			messageReader.init(this.readMessageBuffer);
 			channelContext.setMessageReader(messageReader);
-
-			channelContext.setMessageWriter(new MessageWriter());
+			channelContext.setOutboundMessageQueue(outboundMessageQueue);
 
 			this.socketCache.put(channelContext.getChannel().getId(), channelContext);
 
@@ -131,7 +124,7 @@ public class NioChannelProcessor implements Runnable {
 		if (messages.size() > 0) {
 			for (Message message : messages) {
 				message.setChannelId(context.getChannel().getId());
-				messageProcessor.process(message, writeProxy);
+				context.channelChain().fireChannelRead(message);
 			}
 			messages.clear();
 		}
@@ -139,23 +132,22 @@ public class NioChannelProcessor implements Runnable {
 	}
 
 	public void writeToChannel(SelectionKey key) throws IOException {
-
 		// Take all new messages from outboundMessageQueue
 		takeNewOutboundMessages();
 
-		DefaultChannelContext socket = (DefaultChannelContext) key.attachment();
-		logger.info("Socket : {}, Message Writer : {}", socket);
-		socket.getMessageWriter().write(socket, this.writeByteBuffer);
+		DefaultChannelContext channelContext = (DefaultChannelContext) key.attachment();
+		logger.info("Socket : {}, Message Writer : {}", channelContext);
 
+		channelContext.getMessageWriter().write(channelContext, writeByteBuffer);
 	}
 
 	private void takeNewOutboundMessages() {
 		Message outMessage = null;
 		while ((outMessage = outboundMessageQueue.poll()) != null) {
-			DefaultChannelContext socket = this.socketCache.get(outMessage.getChannelId());
+			DefaultChannelContext channelContext = this.socketCache.get(outMessage.getChannelId());
 
-			if (socket != null) {
-				MessageWriter messageWriter = socket.getMessageWriter();
+			if (channelContext != null) {
+				MessageWriter messageWriter = channelContext.getMessageWriter();
 				messageWriter.enqueue(outMessage);
 			}
 

@@ -7,29 +7,28 @@ public class DefaultChannelHandler implements ChannelInboundHandler {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultChannelHandler.class);
 
 	@Override
-	public void channelRegistered(DefaultChannelContext context) {
+	public void channelRegistered(ChannelHandlerContext context) {
 		logger.info("注册通道：{}", context);
 	}
 
 	@Override
-	public void channelUnregistered(DefaultChannelContext context) {
+	public void channelUnregistered(ChannelHandlerContext context) {
 		logger.info("取消注册:{}", context);
 	}
 
 	@Override
-	public void channelRead(DefaultChannelContext context, Object message) {
+	public void channelRead(ChannelHandlerContext context, Object message) {
 		logger.info("读取通道:{}", context);
-
 	}
 
 	@Override
-	public void channelClosed(DefaultChannelContext context) {
+	public void channelClosed(ChannelHandlerContext context) {
 		logger.info("关闭通道:{}", context);
 
 	}
 
 	@Override
-	public void channelActive(DefaultChannelContext context) {
+	public void channelActive(ChannelHandlerContext context) {
 		logger.info("active通道:{}", context);
 	}
 

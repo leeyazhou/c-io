@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.leeyazhou.cio.channel.ChannelInitializer;
-import com.github.leeyazhou.cio.message.MessageProcessor;
 import com.github.leeyazhou.cio.message.MessageReaderFactory;
 import com.github.leeyazhou.cio.util.concurrent.WorkerThread;
 
@@ -15,15 +14,12 @@ public class NioTcpServer {
 	private Acceptor acceptor = null;
 
 	private MessageReaderFactory messageReaderFactory = null;
-	private MessageProcessor messageProcessor = null;
 	private ServerConfig serverConfig;
 	private final WorkerThread[] ioThreads;
 	private ChannelInitializer channelInitializer;
 
-	public NioTcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory,
-			MessageProcessor messageProcessor) {
+	public NioTcpServer(ServerConfig serverConfig, MessageReaderFactory messageReaderFactory) {
 		this.messageReaderFactory = messageReaderFactory;
-		this.messageProcessor = messageProcessor;
 		this.serverConfig = serverConfig;
 		this.ioThreads = new WorkerThread[serverConfig.getIoThread()];
 		for (int i = 0; i < serverConfig.getIoThread(); i++) {
@@ -44,7 +40,7 @@ public class NioTcpServer {
 
 		NioChannelProcessor[] processors = new NioChannelProcessor[ioThreads.length];
 		for (int i = 0; i < processors.length; i++) {
-			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory, messageProcessor);
+			NioChannelProcessor processor = new NioChannelProcessor(messageReaderFactory);
 			processors[i] = processor;
 			ioThreads[i].setTask(processor);
 		}

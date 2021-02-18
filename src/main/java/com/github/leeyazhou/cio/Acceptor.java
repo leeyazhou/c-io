@@ -53,8 +53,8 @@ public class Acceptor implements Runnable {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
 				DefaultChannelContext channelContext = new DefaultChannelContext(new NioSocketChannel(socketChannel));
-				channelContext.init();
 				channelContext.setChannelInitializer(channelInitializer);
+				channelContext.init();
 				nextWoker().addChannel(channelContext);
 			} catch (Throwable e) {
 				logger.error("", e);

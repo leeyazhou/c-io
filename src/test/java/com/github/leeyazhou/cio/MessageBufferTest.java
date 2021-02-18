@@ -18,14 +18,14 @@ public class MessageBufferTest {
 
 		MessageBuffer messageBuffer = new MessageBuffer();
 
-		Message message = messageBuffer.getMessage();
+		Message message = messageBuffer.newMessage();
 
 		assertNotNull(message);
 		assertEquals(0, message.getOffset());
 		assertEquals(0, message.getLength());
 		assertEquals(4 * 1024, message.getCapacity());
 
-		Message message2 = messageBuffer.getMessage();
+		Message message2 = messageBuffer.newMessage();
 
 		assertNotNull(message2);
 		assertEquals(4096, message2.getOffset());
@@ -40,7 +40,7 @@ public class MessageBufferTest {
 	public void testExpandMessage() {
 		MessageBuffer messageBuffer = new MessageBuffer();
 
-		Message message = messageBuffer.getMessage();
+		Message message = messageBuffer.newMessage();
 
 		byte[] smallSharedArray = message.getSharedArray();
 

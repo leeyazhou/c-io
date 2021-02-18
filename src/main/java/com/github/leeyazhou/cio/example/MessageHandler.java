@@ -5,13 +5,13 @@ import java.io.UnsupportedEncodingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.WriteProxy;
-import com.github.leeyazhou.cio.channel.ChannelHandler;
-import com.github.leeyazhou.cio.channel.DefaultChannelContext;
+import com.github.leeyazhou.cio.channel.ChannelContext;
+import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
+import com.github.leeyazhou.cio.channel.ChannelInboundHandler;
 import com.github.leeyazhou.cio.message.Message;
-import com.github.leeyazhou.cio.message.MessageProcessor;
+import com.github.leeyazhou.cio.message.MessageBuffer;
 
-public class MessageHandler implements MessageProcessor, ChannelHandler {
+public class MessageHandler implements ChannelInboundHandler {
 	private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 	private byte[] httpResponseBytes;
 
@@ -27,35 +27,34 @@ public class MessageHandler implements MessageProcessor, ChannelHandler {
 	}
 
 	@Override
-	public void process(Message request, WriteProxy writeProxy) {
-		logger.info("请求信息：{}", request);
-		logger.info("Message Received from socket: " + request.getChannelId());
+	public void channelRegistered(ChannelHandlerContext context) {
+		context.fireChannelRegistered();
+	}
 
-		Message response = writeProxy.getMessage();
-		response.setChannelId(request.getChannelId());
+	@Override
+	public void channelUnregistered(ChannelHandlerContext context) {
+		context.fireChannelUnregistered();
+	}
+
+	@Override
+	public void channelClosed(ChannelHandlerContext context) {
+		context.fireChannelClosed();
+	}
+
+	@Override
+	public void channelActive(ChannelHandlerContext context) {
+		context.fireChannelActive();
+	}
+
+	@Override
+	public void channelRead(ChannelHandlerContext context, Object message) {
+		context.fireChannelRead(message);
+		logger.info("channelRead");
+		ChannelContext channelContext = context.getChannelContext();
+		Message response = MessageBuffer.DEFAULT.newMessage();
+		response.setChannelId(channelContext.getChannel().getId());
 		response.writeToMessage(httpResponseBytes);
-
-		writeProxy.enqueue(response);
-	}
-
-	@Override
-	public void channelRegistered(DefaultChannelContext context) {
-		
-	}
-
-	@Override
-	public void channelUnregistered(DefaultChannelContext context) {
-		
-	}
-
-	@Override
-	public void channelClosed(DefaultChannelContext context) {
-		
-	}
-
-	@Override
-	public void channelActive(DefaultChannelContext channelContext) {
-		
+		channelContext.write(response);
 	}
 
 }

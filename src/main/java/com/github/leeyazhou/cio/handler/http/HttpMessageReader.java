@@ -1,4 +1,4 @@
-package com.github.leeyazhou.cio.http;
+package com.github.leeyazhou.cio.handler.http;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,7 +27,7 @@ public class HttpMessageReader implements MessageReader {
 	@Override
 	public void init(MessageBuffer messageBuffer) {
 		this.messageBuffer = messageBuffer;
-		this.nextMessage = messageBuffer.getMessage();
+		this.nextMessage = messageBuffer.newMessage();
 		this.nextMessage.setMetaData(new HttpHeaders());
 	}
 
@@ -48,7 +48,7 @@ public class HttpMessageReader implements MessageReader {
 				this.nextMessage.getOffset() + this.nextMessage.getLength(),
 				(HttpHeaders) this.nextMessage.getMetaData());
 		if (endIndex != -1) {
-			Message message = this.messageBuffer.getMessage();
+			Message message = this.messageBuffer.newMessage();
 			message.setMetaData(new HttpHeaders());
 
 			message.writePartialMessageToMessage(nextMessage, endIndex);

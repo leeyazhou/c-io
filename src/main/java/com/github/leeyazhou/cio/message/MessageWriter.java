@@ -23,18 +23,17 @@ public class MessageWriter {
 		this.writeQueue.add(message);
 	}
 
-	public void write(DefaultChannelContext socket, ByteBuffer byteBuffer) throws IOException {
+	public void write(DefaultChannelContext context, ByteBuffer byteBuffer) throws IOException {
 		if (writeQueue.isEmpty()) {
 			logger.info("没有数据输出");
 			return;
 		}
 		for (Message messageInProgress : writeQueue) {
-
 			byteBuffer.put(messageInProgress.getSharedArray(), messageInProgress.getOffset() + this.bytesWritten,
 					messageInProgress.getLength() - this.bytesWritten);
 			byteBuffer.flip();
 
-			this.bytesWritten += socket.write(byteBuffer);
+			this.bytesWritten += context.write(byteBuffer);
 			byteBuffer.clear();
 		}
 

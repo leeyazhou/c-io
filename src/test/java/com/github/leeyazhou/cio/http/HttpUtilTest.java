@@ -6,6 +6,9 @@ import java.io.UnsupportedEncodingException;
 
 import org.junit.Test;
 
+import com.github.leeyazhou.cio.handler.http.HttpHeaders;
+import com.github.leeyazhou.cio.handler.http.HttpUtil;
+
 public class HttpUtilTest {
 
     @Test

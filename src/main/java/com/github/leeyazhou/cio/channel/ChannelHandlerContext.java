@@ -2,9 +2,10 @@ package com.github.leeyazhou.cio.channel;
 
 public class ChannelHandlerContext {
 	private String name;
-	private ChannelHandler handler;
+	protected ChannelHandler handler;
 	protected ChannelHandlerContext next;
-	protected ChannelHandlerContext prefix;
+	protected ChannelHandlerContext prev;
+	protected ChannelContext channelContext;
 
 	public ChannelHandlerContext(String name, ChannelHandler handler) {
 		this.name = name;
@@ -27,12 +28,12 @@ public class ChannelHandlerContext {
 		this.next = next;
 	}
 
-	public ChannelHandlerContext getPrefix() {
-		return prefix;
+	public ChannelHandlerContext getPrev() {
+		return prev;
 	}
 
-	public void setPrefix(ChannelHandlerContext prefix) {
-		this.prefix = prefix;
+	public void setPrev(ChannelHandlerContext prev) {
+		this.prev = prev;
 	}
 
 	public void setName(String name) {
@@ -43,34 +44,73 @@ public class ChannelHandlerContext {
 		return name;
 	}
 
-	public void fireChannelRegistered(DefaultChannelContext context) {
-		handler.channelRegistered(context);
-		if (next != null)
-			next.fireChannelRegistered(context);
+	public static void invokeChannelRegistered(ChannelHandlerContext ctx) {
+		ctx.invokeChannelRegistered();
 	}
 
-	public void fireChannelUnregistered(DefaultChannelContext context) {
-		handler.channelUnregistered(context);
-		if (next != null)
-			next.fireChannelUnregistered(context);
+	public void invokeChannelRegistered() {
+		handler.channelRegistered(this);
 	}
 
-	public void fireChannelRead(DefaultChannelContext context, Object message) {
-		((ChannelInboundHandler) handler).channelRead(context, message);
-		if (next != null)
-			next.fireChannelRead(context, message);
+	public void fireChannelRegistered() {
+		invokeChannelRegistered(next);
 	}
 
-	public void fireChannelClosed(DefaultChannelContext context) {
-		handler.channelClosed(context);
-		if (next != null)
-			next.fireChannelClosed(context);
+	public static void invokeChannelUnregistered(ChannelHandlerContext ctx) {
+		ctx.invokeChannelRegistered();
 	}
 
-	public void fireChannelActive(DefaultChannelContext context) {
-		handler.channelActive(context);
-		if (next != null)
-			next.fireChannelActive(context);
+	public void invokeChannelUnregistered() {
+		handler.channelUnregistered(this);
+	}
+
+	public void fireChannelUnregistered() {
+		invokeChannelUnregistered(next);
+	}
+
+	public static void invokeChannelRead(ChannelHandlerContext ctx, Object message) {
+		ctx.invokeChannelRead(message);
+	}
+
+	public void invokeChannelRead(Object message) {
+		((ChannelInboundHandler) handler).channelRead(this, message);
+	}
+
+	public void fireChannelRead(Object message) {
+		invokeChannelRead(next, message);
+	}
+
+	public static void invokeChannelClosed(ChannelHandlerContext ctx) {
+		ctx.invokeChannelClosed();
+	}
+
+	public void invokeChannelClosed() {
+		handler.channelClosed(this);
+	}
+
+	public void fireChannelClosed() {
+		invokeChannelClosed(next);
+	}
+
+	
+	public static void invokeChannelActive(ChannelHandlerContext ctx) {
+		ctx.invokeChannelActive();
+	}
+
+	public void invokeChannelActive() {
+		handler.channelActive(this);
+	}
+	
+	public void fireChannelActive() {
+		next.handler.channelActive(next);
+	}
+
+	public void setChannelContext(ChannelContext channelContext) {
+		this.channelContext = channelContext;
+	}
+
+	public ChannelContext getChannelContext() {
+		return channelContext;
 	}
 
 }

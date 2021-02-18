@@ -10,8 +10,9 @@ import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NioSocketChannel extends AbstractChannel {
+import com.github.leeyazhou.cio.message.Message;
 
+public class NioSocketChannel extends AbstractChannel {
 	private static final Logger logger = LoggerFactory.getLogger(NioSocketChannel.class);
 	private ChannelHandlerChain channelChain;
 	private SocketChannel socketChannel;
@@ -28,16 +29,29 @@ public class NioSocketChannel extends AbstractChannel {
 
 	@Override
 	public int write(ByteBuffer byteBuffer) throws IOException {
-		return socketChannel.write(byteBuffer);
+		int bytesWritten = socketChannel.write(byteBuffer);
+		int totalBytesWritten = bytesWritten;
+
+		while (bytesWritten > 0 && byteBuffer.hasRemaining()) {
+			bytesWritten = socketChannel.write(byteBuffer);
+			totalBytesWritten += bytesWritten;
+		}
+
+		return totalBytesWritten;
+	}
+
+	@Override
+	public void write(Message response) {
+		channelContext.write(response);
 	}
 
 	@Override
 	public SelectionKey register(Selector readSelector, int opRead, DefaultChannelContext channelContext)
 			throws ClosedChannelException {
 		SelectionKey key = socketChannel.register(readSelector, SelectionKey.OP_READ, channelContext);
-		channelChain.fireChannelRegistered(channelContext);
+		channelChain.fireChannelRegistered();
 		if (channelContext.getChannel().isActive()) {
-			channelChain.fireChannelActive(channelContext);
+			channelChain.fireChannelActive();
 		}
 		return key;
 	}
@@ -58,7 +72,7 @@ public class NioSocketChannel extends AbstractChannel {
 	public ChannelContext getChannelContext() {
 		return channelContext;
 	}
-	
+
 	@Override
 	public ChannelContext context() {
 		return channelContext;
@@ -79,6 +93,6 @@ public class NioSocketChannel extends AbstractChannel {
 		} catch (IOException e) {
 			logger.error("", e);
 		}
-		channelChain.fireChannelClosed(context);
+		channelChain.fireChannelClosed();
 	}
 }

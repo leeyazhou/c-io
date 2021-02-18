@@ -31,6 +31,7 @@ public class MessageBuffer {
 	// todo make all message buffer capacities and block sizes configurable
 	// todo calculate free block queue sizes based on capacity and block size of
 	// buffers.
+	public static final MessageBuffer DEFAULT = new MessageBuffer();
 
 	public MessageBuffer() {
 		// add all free sections to all free section queues.
@@ -45,7 +46,7 @@ public class MessageBuffer {
 		}
 	}
 
-	public Message getMessage() {
+	public Message newMessage() {
 		int nextFreeSmallBlock = this.smallMessageBufferFreeBlocks.take();
 
 		if (nextFreeSmallBlock == -1)

@@ -2,7 +2,9 @@ package com.github.leeyazhou.cio.channel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Queue;
 
+import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
@@ -14,18 +16,20 @@ public class DefaultChannelContext implements ChannelContext {
 	private boolean endOfStreamReached = false;
 	private ChannelHandlerChain handlerChain;
 	private ChannelInitializer channelInitializer;
+	private Queue<Message> outboundMessageQueue;
 
 	public DefaultChannelContext(NioSocketChannel channel) {
 		this.channel = channel;
 		this.handlerChain = new ChannelHandlerChain(this);
+		this.messageWriter = new MessageWriter();
 	}
-	
+
 	public void init() {
 		this.channel.setChannelContext(this);
 		this.channel.setChannelChain(handlerChain);
 		this.channelInitializer.initChannel(channel);
 	}
-	
+
 	public int read(ByteBuffer byteBuffer) throws IOException {
 		int bytesRead = 0;
 		int totalBytesRead = bytesRead;
@@ -40,15 +44,12 @@ public class DefaultChannelContext implements ChannelContext {
 	}
 
 	public int write(ByteBuffer byteBuffer) throws IOException {
-		int bytesWritten = this.channel.write(byteBuffer);
-		int totalBytesWritten = bytesWritten;
+		return channel.write(byteBuffer);
+	}
 
-		while (bytesWritten > 0 && byteBuffer.hasRemaining()) {
-			bytesWritten = this.channel.write(byteBuffer);
-			totalBytesWritten += bytesWritten;
-		}
-
-		return totalBytesWritten;
+	@Override
+	public void write(Message response) {
+		outboundMessageQueue.add(response);
 	}
 
 	public Channel getChannel() {
@@ -89,11 +90,14 @@ public class DefaultChannelContext implements ChannelContext {
 
 	public void setChannelInitializer(ChannelInitializer channelInitializer) {
 		this.channelInitializer = channelInitializer;
-		
 	}
 
 	@Override
 	public ChannelHandlerChain channelChain() {
 		return handlerChain;
+	}
+
+	public void setOutboundMessageQueue(Queue<Message> outboundMessageQueue) {
+		this.outboundMessageQueue = outboundMessageQueue;
 	}
 }

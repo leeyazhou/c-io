@@ -1,4 +1,4 @@
-package com.github.leeyazhou.cio.http;
+package com.github.leeyazhou.cio.handler.http;
 
 public class HttpHeaders {
 
