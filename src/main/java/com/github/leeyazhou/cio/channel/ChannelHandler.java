@@ -2,14 +2,12 @@ package com.github.leeyazhou.cio.channel;
 
 public interface ChannelHandler {
 
-	void channelRegistered(ChannelHandlerContext context);
+	void channelRegistered(DefaultChannelContext context);
 
-	void channelUnregistered(ChannelHandlerContext context);
+	void channelUnregistered(DefaultChannelContext context);
 
-	void channelRead(ChannelHandlerContext context);
+	void channelClosed(DefaultChannelContext context);
 
-	void channelClosed(ChannelHandlerContext context);
-
-	void channelActive(ChannelHandlerContext channelContext);
+	void channelActive(DefaultChannelContext channelContext);
 
 }

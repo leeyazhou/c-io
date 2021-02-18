@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
+import com.github.leeyazhou.cio.channel.DefaultChannelContext;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageBuffer;
 import com.github.leeyazhou.cio.message.MessageReader;
@@ -25,14 +25,14 @@ public class HttpMessageReader implements MessageReader {
 	}
 
 	@Override
-	public void init(MessageBuffer readMessageBuffer) {
-		this.messageBuffer = readMessageBuffer;
+	public void init(MessageBuffer messageBuffer) {
+		this.messageBuffer = messageBuffer;
 		this.nextMessage = messageBuffer.getMessage();
 		this.nextMessage.setMetaData(new HttpHeaders());
 	}
 
 	@Override
-	public int read(ChannelHandlerContext context, ByteBuffer byteBuffer) throws IOException {
+	public int read(DefaultChannelContext context, ByteBuffer byteBuffer) throws IOException {
 		int bytesRead = context.read(byteBuffer);
 		logger.info("读取字节数:{}", bytesRead);
 		byteBuffer.flip();

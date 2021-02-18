@@ -12,13 +12,15 @@ public interface Channel {
 
 	int write(ByteBuffer byteBuffer) throws IOException;
 
-	SelectionKey register(Selector readSelector, int opRead, ChannelHandlerContext chanelContext) throws ClosedChannelException;
+	SelectionKey register(Selector readSelector, int opRead, DefaultChannelContext chanelContext) throws ClosedChannelException;
 
 	void configureBlocking(boolean blocking) throws IOException;
 	
 	boolean isActive();
 
-	void close(ChannelHandlerContext context);
+	void close(DefaultChannelContext context);
 	
 	long getId();
+	
+	ChannelContext context();
 }

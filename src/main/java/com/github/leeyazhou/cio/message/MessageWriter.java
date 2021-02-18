@@ -8,7 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
+import com.github.leeyazhou.cio.channel.DefaultChannelContext;
 
 public class MessageWriter {
 
@@ -23,7 +23,7 @@ public class MessageWriter {
 		this.writeQueue.add(message);
 	}
 
-	public void write(ChannelHandlerContext socket, ByteBuffer byteBuffer) throws IOException {
+	public void write(DefaultChannelContext socket, ByteBuffer byteBuffer) throws IOException {
 		if (writeQueue.isEmpty()) {
 			logger.info("没有数据输出");
 			return;

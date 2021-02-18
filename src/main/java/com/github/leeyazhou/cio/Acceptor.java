@@ -8,7 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
+import com.github.leeyazhou.cio.channel.ChannelInitializer;
+import com.github.leeyazhou.cio.channel.DefaultChannelContext;
 import com.github.leeyazhou.cio.channel.NioSocketChannel;
 
 public class Acceptor implements Runnable {
@@ -20,6 +21,7 @@ public class Acceptor implements Runnable {
 	private ServerSocketChannel serverSocket = null;
 	private NioChannelProcessor[] processors;
 	private AtomicInteger ioIndex = new AtomicInteger();
+	private ChannelInitializer channelInitializer;
 
 	public Acceptor(String host, int tcpPort, NioChannelProcessor[] processors) {
 		this.tcpPort = tcpPort;
@@ -50,7 +52,10 @@ public class Acceptor implements Runnable {
 			try {
 				SocketChannel socketChannel = this.serverSocket.accept();
 				logger.info("Socket accepted: {}", socketChannel);
-				nextWoker().addChannel(new ChannelHandlerContext(new NioSocketChannel(socketChannel)));
+				DefaultChannelContext channelContext = new DefaultChannelContext(new NioSocketChannel(socketChannel));
+				channelContext.init();
+				channelContext.setChannelInitializer(channelInitializer);
+				nextWoker().addChannel(channelContext);
 			} catch (Throwable e) {
 				logger.error("", e);
 			}
@@ -66,5 +71,9 @@ public class Acceptor implements Runnable {
 
 	private NioChannelProcessor nextWoker() {
 		return processors[ioIndex.incrementAndGet() % processors.length];
+	}
+	
+	public void setChannelInitializer(ChannelInitializer channelInitializer) {
+		this.channelInitializer = channelInitializer;
 	}
 }

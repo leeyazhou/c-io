@@ -24,9 +24,9 @@ public class MessageBuffer {
 	public static final byte[] MEDINUM_MESSAGE_BUFFER = new byte[128 * 128 * KB]; // 128 x 128KB messages = 16MB.
 	public static final byte[] LARGE_MESSAGE_BUFFER = new byte[16 * 1 * MB]; // 16 * 1MB messages = 16MB.
 
-	QueueIntFlip smallMessageBufferFreeBlocks = new QueueIntFlip(1024); // 1024 free sections
-	QueueIntFlip mediumMessageBufferFreeBlocks = new QueueIntFlip(128); // 128 free sections
-	QueueIntFlip largeMessageBufferFreeBlocks = new QueueIntFlip(16); // 16 free sections
+	private QueueIntFlip smallMessageBufferFreeBlocks = new QueueIntFlip(1024); // 1024 free sections
+	private QueueIntFlip mediumMessageBufferFreeBlocks = new QueueIntFlip(128); // 128 free sections
+	private QueueIntFlip largeMessageBufferFreeBlocks = new QueueIntFlip(16); // 16 free sections
 
 	// todo make all message buffer capacities and block sizes configurable
 	// todo calculate free block queue sizes based on capacity and block size of

@@ -1,83 +1,76 @@
 package com.github.leeyazhou.cio.channel;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import com.github.leeyazhou.cio.message.MessageReader;
-import com.github.leeyazhou.cio.message.MessageWriter;
-
 public class ChannelHandlerContext {
-	private Channel channel = null;
-	private MessageReader messageReader = null;
-	private MessageWriter messageWriter = null;
+	private String name;
+	private ChannelHandler handler;
+	protected ChannelHandlerContext next;
+	protected ChannelHandlerContext prefix;
 
-	private boolean endOfStreamReached = false;
-
-	public ChannelHandlerContext() {
+	public ChannelHandlerContext(String name, ChannelHandler handler) {
+		this.name = name;
+		this.handler = handler;
 	}
 
-	public ChannelHandlerContext(Channel channel) {
-		this.channel = channel;
+	public ChannelHandler getHandler() {
+		return handler;
 	}
 
-	public int read(ByteBuffer byteBuffer) throws IOException {
-		int bytesRead = 0;
-		int totalBytesRead = bytesRead;
-		while ((bytesRead = channel.read(byteBuffer)) > 0) {
-			totalBytesRead += bytesRead;
-		}
-		if (bytesRead == -1) {
-			this.endOfStreamReached = true;
-		}
-		
-		return totalBytesRead;
+	public void setHandler(ChannelHandler handler) {
+		this.handler = handler;
 	}
 
-	public int write(ByteBuffer byteBuffer) throws IOException {
-		int bytesWritten = this.channel.write(byteBuffer);
-		int totalBytesWritten = bytesWritten;
-
-		while (bytesWritten > 0 && byteBuffer.hasRemaining()) {
-			bytesWritten = this.channel.write(byteBuffer);
-			totalBytesWritten += bytesWritten;
-		}
-
-		return totalBytesWritten;
+	public ChannelHandlerContext getNext() {
+		return next;
 	}
 
-	public Channel getChannel() {
-		return channel;
+	public void setNext(ChannelHandlerContext next) {
+		this.next = next;
 	}
 
-	public void setChannel(Channel socketChannel) {
-		this.channel = socketChannel;
+	public ChannelHandlerContext getPrefix() {
+		return prefix;
 	}
 
-	public MessageReader getMessageReader() {
-		return messageReader;
+	public void setPrefix(ChannelHandlerContext prefix) {
+		this.prefix = prefix;
 	}
 
-	public void setMessageReader(MessageReader messageReader) {
-		this.messageReader = messageReader;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public MessageWriter getMessageWriter() {
-		return messageWriter;
+	public String getName() {
+		return name;
 	}
 
-	public void setMessageWriter(MessageWriter messageWriter) {
-		this.messageWriter = messageWriter;
+	public void fireChannelRegistered(DefaultChannelContext context) {
+		handler.channelRegistered(context);
+		if (next != null)
+			next.fireChannelRegistered(context);
 	}
 
-	public boolean isEndOfStreamReached() {
-		return endOfStreamReached;
+	public void fireChannelUnregistered(DefaultChannelContext context) {
+		handler.channelUnregistered(context);
+		if (next != null)
+			next.fireChannelUnregistered(context);
 	}
 
-	public void setEndOfStreamReached(boolean endOfStreamReached) {
-		this.endOfStreamReached = endOfStreamReached;
+	public void fireChannelRead(DefaultChannelContext context, Object message) {
+		((ChannelInboundHandler) handler).channelRead(context, message);
+		if (next != null)
+			next.fireChannelRead(context, message);
 	}
 
-	public void close() {
-		channel.close(this);
+	public void fireChannelClosed(DefaultChannelContext context) {
+		handler.channelClosed(context);
+		if (next != null)
+			next.fireChannelClosed(context);
 	}
+
+	public void fireChannelActive(DefaultChannelContext context) {
+		handler.channelActive(context);
+		if (next != null)
+			next.fireChannelActive(context);
+	}
+
 }
