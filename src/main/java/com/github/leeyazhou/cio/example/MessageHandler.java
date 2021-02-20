@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.github.leeyazhou.cio.channel.ChannelContext;
 import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
 import com.github.leeyazhou.cio.channel.ChannelInboundHandler;
+import com.github.leeyazhou.cio.handler.http.HttpRequest;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageBuffer;
 
@@ -47,9 +48,11 @@ public class MessageHandler implements ChannelInboundHandler {
 	}
 
 	@Override
-	public void channelRead(ChannelHandlerContext context, Object message) {
+	public void channelRead(ChannelHandlerContext context, Object msg) {
+		Message message = (Message) msg;
 		context.fireChannelRead(message);
-		logger.info("channelRead");
+		HttpRequest httpRequest = (HttpRequest) message.getMetaData();
+		logger.info("读取数据channelRead: {}", httpRequest);
 		ChannelContext channelContext = context.getChannelContext();
 		Message response = MessageBuffer.DEFAULT.newMessage();
 		response.setChannelId(channelContext.getChannel().getId());

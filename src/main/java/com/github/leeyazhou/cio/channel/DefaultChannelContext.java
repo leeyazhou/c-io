@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageReader;
 import com.github.leeyazhou.cio.message.MessageWriter;
 
 public class DefaultChannelContext implements ChannelContext {
+	static final Logger logger = LoggerFactory.getLogger(DefaultChannelContext.class);
 	private NioSocketChannel channel = null;
 	private MessageReader messageReader = null;
 	private MessageWriter messageWriter = null;

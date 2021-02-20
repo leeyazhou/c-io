@@ -17,7 +17,7 @@ public class ServerMain {
 		MessageHandler messageProcessor = new MessageHandler();
 
 		ServerConfig serverConfig = new ServerConfig();
-		serverConfig.setIoThread(1);
+		serverConfig.setIoThread(2);
 		serverConfig.setPort(9999);
 		serverConfig.setMaxSocketSize(2048);
 		NioTcpServer server = new NioTcpServer(serverConfig, new HttpMessageReaderFactory());

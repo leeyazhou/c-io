@@ -14,7 +14,7 @@ import com.github.leeyazhou.cio.message.MessageBuffer;
 import com.github.leeyazhou.cio.message.MessageReader;
 
 public class HttpMessageReader implements MessageReader {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(HttpMessageReader.class);
 	private MessageBuffer messageBuffer = null;
 
@@ -28,7 +28,7 @@ public class HttpMessageReader implements MessageReader {
 	public void init(MessageBuffer messageBuffer) {
 		this.messageBuffer = messageBuffer;
 		this.nextMessage = messageBuffer.newMessage();
-		this.nextMessage.setMetaData(new HttpHeaders());
+		this.nextMessage.setMetaData(new HttpRequest());
 	}
 
 	@Override
@@ -42,14 +42,12 @@ public class HttpMessageReader implements MessageReader {
 			return bytesRead;
 		}
 
-		this.nextMessage.writeToMessage(byteBuffer);
-
-		int endIndex = HttpUtil.parseHttpRequest(this.nextMessage.getSharedArray(), this.nextMessage.getOffset(),
-				this.nextMessage.getOffset() + this.nextMessage.getLength(),
-				(HttpHeaders) this.nextMessage.getMetaData());
+		nextMessage.writeToMessage(byteBuffer);
+		int endIndex = HttpUtil.parseHttpRequest(nextMessage.getSharedArray(), nextMessage.getOffset(),
+				nextMessage.getOffset() + nextMessage.getLength(), (HttpRequest) this.nextMessage.getMetaData());
 		if (endIndex != -1) {
-			Message message = this.messageBuffer.newMessage();
-			message.setMetaData(new HttpHeaders());
+			Message message = messageBuffer.newMessage();
+			message.setMetaData(new HttpRequest());
 
 			message.writePartialMessageToMessage(nextMessage, endIndex);
 
