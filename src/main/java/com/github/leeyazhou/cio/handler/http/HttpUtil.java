@@ -16,7 +16,7 @@ public class HttpUtil {
 		int endOfFirstLine = findNextLineBreak(src, startIndex, endIndex);
 		if (endOfFirstLine == -1)
 			return -1;
-//		logger.info("总数据：{}", new String(src, startIndex, endIndex));
+		logger.info("总数据：{}", new String(src, startIndex, endIndex));
 		String head = new String(src, startIndex, endOfFirstLine - startIndex - 1);
 		parseHead(head, httpRequest);
 
@@ -53,7 +53,7 @@ public class HttpUtil {
 
 			byte[] bodyBytes = new byte[contentLength];
 			System.arraycopy(src, bodyStartIndex, bodyBytes, 0, contentLength);
-			HttpBody body = new HttpBody(bodyBytes);
+			HttpRequestBody body = new HttpRequestBody(bodyBytes);
 			httpRequest.setBody(body);
 
 			return bodyEndIndex;

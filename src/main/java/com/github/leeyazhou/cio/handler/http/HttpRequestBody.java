@@ -1,10 +1,10 @@
 package com.github.leeyazhou.cio.handler.http;
 
-public class HttpBody {
+public class HttpRequestBody {
 
 	private byte[] body;
 
-	public HttpBody(byte[] body) {
+	public HttpRequestBody(byte[] body) {
 		this.body = body;
 	}
 

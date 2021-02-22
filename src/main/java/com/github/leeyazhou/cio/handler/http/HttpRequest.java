@@ -1,26 +1,21 @@
 package com.github.leeyazhou.cio.handler.http;
 
-import java.util.ArrayList;
-import java.util.List;
+public class HttpRequest extends HttpObjectBase {
+	
+	public HttpRequest() {
+		this(HttpVersion.HTTP_1_1);
+	}
 
-public class HttpRequest {
+	public HttpRequest(HttpVersion version) {
+		super(version);
+	}
 
 	private HttpMethod method;
-	private HttpVersion version;
-	private List<HttpHeader> headers = new ArrayList<>();
-	private HttpBody body;
+	private HttpRequestBody body;
 
 	private int contentLength = 0;
 
 	private String requestUri;
-
-	public void addHeader(String name, String value) {
-		headers.add(new HttpHeader(name, value));
-	}
-
-	public void addHeader(HttpHeader header) {
-		headers.add(header);
-	}
 
 	public void setMethod(HttpMethod method) {
 		this.method = method;
@@ -28,10 +23,6 @@ public class HttpRequest {
 
 	public HttpMethod getMethod() {
 		return method;
-	}
-
-	public void setVersion(HttpVersion version) {
-		this.version = version;
 	}
 
 	public HttpVersion getVersion() {
@@ -54,11 +45,11 @@ public class HttpRequest {
 		this.contentLength = contentLength;
 	}
 
-	public void setBody(HttpBody body) {
+	public void setBody(HttpRequestBody body) {
 		this.body = body;
 	}
 
-	public HttpBody getBody() {
+	public HttpRequestBody getBody() {
 		return body;
 	}
 

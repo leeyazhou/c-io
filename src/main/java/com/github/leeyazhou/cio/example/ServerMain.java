@@ -13,7 +13,6 @@ public class ServerMain {
 	static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
 	public static void main(String[] args) throws IOException {
-
 		MessageHandler messageProcessor = new MessageHandler();
 
 		ServerConfig serverConfig = new ServerConfig();
