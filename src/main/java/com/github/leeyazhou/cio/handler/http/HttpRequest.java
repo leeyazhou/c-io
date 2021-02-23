@@ -1,7 +1,7 @@
 package com.github.leeyazhou.cio.handler.http;
 
 public class HttpRequest extends HttpObjectBase {
-	
+
 	public HttpRequest() {
 		this(HttpVersion.HTTP_1_1);
 	}
@@ -12,8 +12,6 @@ public class HttpRequest extends HttpObjectBase {
 
 	private HttpMethod method;
 	private HttpRequestBody body;
-
-	private int contentLength = 0;
 
 	private String requestUri;
 
@@ -35,14 +33,6 @@ public class HttpRequest extends HttpObjectBase {
 
 	public void setRequestUri(String requestUri) {
 		this.requestUri = requestUri;
-	}
-
-	public int getContentLength() {
-		return contentLength;
-	}
-
-	public void setContentLength(int contentLength) {
-		this.contentLength = contentLength;
 	}
 
 	public void setBody(HttpRequestBody body) {

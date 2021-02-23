@@ -1,6 +1,6 @@
 package com.github.leeyazhou.cio.example;
 
-import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.github.leeyazhou.cio.channel.ChannelContext;
 import com.github.leeyazhou.cio.channel.ChannelHandlerContext;
 import com.github.leeyazhou.cio.channel.ChannelInboundHandler;
-import com.github.leeyazhou.cio.handler.http.HttpHeader;
 import com.github.leeyazhou.cio.handler.http.HttpRequest;
 import com.github.leeyazhou.cio.handler.http.HttpResponse;
 import com.github.leeyazhou.cio.handler.http.HttpResponseBody;
@@ -28,7 +27,7 @@ public class ServletHandler implements ChannelInboundHandler {
 		response = new HttpResponse(HttpVersion.HTTP_1_1);
 		response.addHeader("Content-Length", "38");
 		response.addHeader("Content-Type", "text/html");
-		response.setStatus(new HttpStatus(200));
+		response.setStatus(HttpStatus.SC_OK);
 		String respnseBody = "<html><body>Hello World!</body></html>";
 		response.setBody(new HttpResponseBody(respnseBody.getBytes()));
 		this.webLoader = new WebLoader();
@@ -78,13 +77,15 @@ public class ServletHandler implements ChannelInboundHandler {
 //		responseMessage.writeToMessage(httpResponseBytes);
 //		String httpResponse = "HTTP/1.1 200 OK\r\n" + "Content-Length: 38\r\n" + "Content-Type: text/html\r\n" + "\r\n"
 //				+ "<html><body>Hello World!</body></html>";
+		String statusLine = response.getVersion().string() + " " + response.getStatus() + lineSepator;
 
-		String statusLine = response.getVersion().string() + " " + response.getStatus().getCode() + " OK" + lineSepator;
+		response.addHeader("Content-Length", String.valueOf(response.getContentLength()));
+
 		responseMessage.writeToMessage(statusLine.getBytes());
-		List<HttpHeader> headers = response.getHeaders();
+		Map<String, String> headers = response.getHeaders();
 		if (headers != null && headers.size() > 0) {
-			for (HttpHeader header : headers) {
-				String headerLine = header.getName() + ": " + header.getValue() + lineSepator;
+			for (Map.Entry<String, String> entry : headers.entrySet()) {
+				String headerLine = entry.getKey() + ": " + entry.getValue() + lineSepator;
 				responseMessage.writeToMessage(headerLine.getBytes());
 			}
 			responseMessage.writeToMessage(lineSepator.getBytes());
@@ -92,7 +93,6 @@ public class ServletHandler implements ChannelInboundHandler {
 			responseMessage.writeToMessage(lineSepator.getBytes());
 			responseMessage.writeToMessage(lineSepator.getBytes());
 		}
-
 		responseMessage.writeToMessage(response.getBody().getBody());
 	}
 

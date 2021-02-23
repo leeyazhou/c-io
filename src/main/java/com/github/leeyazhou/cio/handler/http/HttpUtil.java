@@ -31,9 +31,12 @@ public class HttpUtil {
 			HttpHeader httpHeader = new HttpHeader(header);
 			httpRequest.addHeader(httpHeader);
 
-			if (httpHeader.getName().equals("Content-Length")) {
+			if (httpHeader.getName().equalsIgnoreCase("Content-Length")) {
 				contentLength = Integer.parseInt(httpHeader.getValue());
 				httpRequest.setContentLength(contentLength);
+			}
+			if (httpHeader.getName().equalsIgnoreCase("Content-Type")) {
+				httpRequest.setContentType(httpHeader.getValue());
 			}
 
 			prevEndOfHeader = endOfHeader + 1;

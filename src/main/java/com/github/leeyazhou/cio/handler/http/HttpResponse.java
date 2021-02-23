@@ -23,6 +23,9 @@ public class HttpResponse extends HttpObjectBase {
 
 	public void setBody(HttpResponseBody body) {
 		this.body = body;
+		if (body != null && body.getBody() != null) {
+			setContentLength(body.getBody().length);
+		}
 	}
 
 	public HttpResponseBody getBody() {
