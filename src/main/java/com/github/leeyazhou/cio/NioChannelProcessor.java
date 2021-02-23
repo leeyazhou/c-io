@@ -27,7 +27,7 @@ public class NioChannelProcessor implements Runnable {
 	private Queue<DefaultChannelContext> inboundChannelQueue = null;
 
 	private MessageBuffer readMessageBuffer = null;
-	private MessageBuffer writeMessageBuffer = null;
+	protected MessageBuffer writeMessageBuffer = null;
 	private MessageReaderFactory messageReaderFactory = null;
 
 	private Queue<Message> outboundMessageQueue = new LinkedList<>();
@@ -38,11 +38,9 @@ public class NioChannelProcessor implements Runnable {
 	private ByteBuffer writeByteBuffer = ByteBuffer.allocate(1024 * 1024);
 	private Selector selector = null;
 
-
 	private boolean running = true;
 
-	public NioChannelProcessor(MessageReaderFactory messageReaderFactory)
-			throws IOException {
+	public NioChannelProcessor(MessageReaderFactory messageReaderFactory) throws IOException {
 		this.inboundChannelQueue = new ArrayBlockingQueue<>(10240);
 
 		this.readMessageBuffer = new MessageBuffer();
@@ -82,7 +80,7 @@ public class NioChannelProcessor implements Runnable {
 		while ((channelContext = this.inboundChannelQueue.poll()) != null) {
 			channelContext.getChannel().configureBlocking(false);
 
-			MessageReader messageReader = messageReaderFactory.createMessageReader();
+			MessageReader messageReader = messageReaderFactory.createMessageReader(channelContext);
 			messageReader.init(this.readMessageBuffer);
 			channelContext.setMessageReader(messageReader);
 			channelContext.setOutboundMessageQueue(outboundMessageQueue);
@@ -118,7 +116,7 @@ public class NioChannelProcessor implements Runnable {
 
 	private void readFromSocket(SelectionKey key) throws IOException {
 		DefaultChannelContext context = (DefaultChannelContext) key.attachment();
-		context.getMessageReader().read(context, readByteBuffer);
+		context.getMessageReader().read(readByteBuffer);
 
 		List<Message> messages = context.getMessageReader().getMessages();
 		if (messages.size() > 0) {
@@ -138,7 +136,7 @@ public class NioChannelProcessor implements Runnable {
 		DefaultChannelContext channelContext = (DefaultChannelContext) key.attachment();
 		logger.info("Socket : {}, Message Writer : {}", channelContext);
 
-		channelContext.getMessageWriter().write(channelContext, writeByteBuffer);
+		channelContext.getMessageWriter().write(writeByteBuffer);
 	}
 
 	private void takeNewOutboundMessages() {

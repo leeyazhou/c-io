@@ -8,20 +8,21 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.leeyazhou.cio.channel.DefaultChannelContext;
+import com.github.leeyazhou.cio.channel.ChannelContext;
 import com.github.leeyazhou.cio.message.Message;
 import com.github.leeyazhou.cio.message.MessageBuffer;
 import com.github.leeyazhou.cio.message.MessageReader;
 
 public class HttpMessageReader implements MessageReader {
-
 	private static final Logger logger = LoggerFactory.getLogger(HttpMessageReader.class);
 	private MessageBuffer messageBuffer = null;
 
 	private List<Message> completeMessages = new ArrayList<Message>();
 	private Message nextMessage = null;
+	private ChannelContext channelContext;
 
-	public HttpMessageReader() {
+	public HttpMessageReader(ChannelContext channelContext) {
+		this.channelContext = channelContext;
 	}
 
 	@Override
@@ -32,8 +33,8 @@ public class HttpMessageReader implements MessageReader {
 	}
 
 	@Override
-	public int read(DefaultChannelContext context, ByteBuffer byteBuffer) throws IOException {
-		int bytesRead = context.read(byteBuffer);
+	public int read(ByteBuffer byteBuffer) throws IOException {
+		int bytesRead = channelContext.read(byteBuffer);
 		logger.info("读取字节数:{}", bytesRead);
 		byteBuffer.flip();
 
@@ -45,6 +46,7 @@ public class HttpMessageReader implements MessageReader {
 		nextMessage.writeToMessage(byteBuffer);
 		int endIndex = HttpUtil.parseHttpRequest(nextMessage.getSharedArray(), nextMessage.getOffset(),
 				nextMessage.getOffset() + nextMessage.getLength(), (HttpRequest) this.nextMessage.getMetaData());
+		logger.info("解析http结果：{}", endIndex);
 		if (endIndex != -1) {
 			Message message = messageBuffer.newMessage();
 			message.setMetaData(new HttpRequest());

@@ -74,6 +74,11 @@ public class NioSocketChannel extends AbstractChannel {
 	}
 
 	@Override
+	public SocketChannel javaChannel() {
+		return socketChannel;
+	}
+
+	@Override
 	public ChannelContext context() {
 		return channelContext;
 	}

@@ -14,6 +14,7 @@ public class ServerMain {
 
 	public static void main(String[] args) throws IOException {
 		MessageHandler messageProcessor = new MessageHandler();
+		ServletHandler servletHandler = new ServletHandler();
 
 		ServerConfig serverConfig = new ServerConfig();
 		serverConfig.setIoThread(2);
@@ -23,6 +24,7 @@ public class ServerMain {
 		server.setChannelInitializer(channel -> {
 			logger.info("初始化通道");
 			channel.context().channelChain().add("http", messageProcessor);
+			channel.context().channelChain().add("servlet", servletHandler);
 		});
 
 		server.start();

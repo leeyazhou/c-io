@@ -25,7 +25,7 @@ public class DefaultChannelContext implements ChannelContext {
 	public DefaultChannelContext(NioSocketChannel channel) {
 		this.channel = channel;
 		this.handlerChain = new ChannelHandlerChain(this);
-		this.messageWriter = new MessageWriter();
+		this.messageWriter = new MessageWriter(this);
 	}
 
 	public void init() {

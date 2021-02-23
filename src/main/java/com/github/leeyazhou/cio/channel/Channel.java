@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 
 import com.github.leeyazhou.cio.message.Message;
 
@@ -28,4 +29,6 @@ public interface Channel {
 	ChannelContext context();
 
 	void write(Message response);
+	
+	SocketChannel javaChannel();
 }

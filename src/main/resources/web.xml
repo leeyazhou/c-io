@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.5">
+
+	<display-name>servletDemo</display-name>
+
+	<welcome-file-list>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+
+	<context-param>
+		<param-name>servetName</param-name>
+		<param-value>初始化参数1</param-value>
+
+	</context-param>
+
+	<servlet>
+		<servlet-name>helloServlet</servlet-name>
+		<servlet-class>com.github.leeyazhou.demo.HelloServlet</servlet-class>
+		<init-param>
+			<param-name>username</param-name>
+			<param-value>leeyazhou</param-value>
+			<description>i am lee</description>
+		</init-param>
+		
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>helloServlet</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+
+	<filter>
+		<filter-name>startupFilter</filter-name>
+		<filter-class>com.github.leeyazhou.demo.filter.HelloFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>startupFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+
+	<listener>
+		<display-name>startupListener</display-name>
+		<listener-class>com.github.leeyazhou.demo.listener.StartupListener</listener-class>
+	</listener>
+	
+</web-app>
