@@ -23,6 +23,9 @@ public class HelloServlet extends GenericServlet {
 	@Override
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 		logger.info("service");
+		String data = "Hello world";
+		res.getWriter().write(data);
+		res.getWriter().flush();
 	}
 
 }

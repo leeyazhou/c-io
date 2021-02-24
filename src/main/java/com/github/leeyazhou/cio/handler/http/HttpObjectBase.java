@@ -7,6 +7,7 @@ public class HttpObjectBase {
 	protected HttpVersion version;
 	protected Map<String, String> headers = new HashMap<>();
 	protected String contentType;
+	protected String characterEncoding;
 	protected int contentLength;
 
 	public HttpObjectBase(HttpVersion version) {
@@ -53,6 +54,12 @@ public class HttpObjectBase {
 		this.contentLength = contentLength;
 	}
 	
+	public String getCharacterEncoding() {
+		return characterEncoding;
+	}
 	
+	public void setCharacterEncoding(String characterEncoding) {
+		this.characterEncoding = characterEncoding;
+	}
 
 }

@@ -50,7 +50,6 @@ public class HttpMessageReader implements MessageReader {
 		if (endIndex != -1) {
 			Message message = messageBuffer.newMessage();
 			message.setMetaData(new HttpRequest());
-
 			message.writePartialMessageToMessage(nextMessage, endIndex);
 
 			completeMessages.add(nextMessage);

@@ -32,9 +32,9 @@ public class MessageWriter {
 			return;
 		}
 		for (Message message : writeQueue) {
-//			byteBuffer.put(message.getSharedArray(), message.getOffset() + this.bytesWritten,
-//					message.getLength() - this.bytesWritten);
-			byteBuffer.put(message.getSharedArray(), message.getOffset(), message.getLength());
+			byteBuffer.put(message.getSharedArray(), message.getOffset() + this.bytesWritten,
+					message.getLength() - this.bytesWritten);
+//			byteBuffer.put(message.getSharedArray(), message.getOffset(), message.getLength());
 			byteBuffer.flip();
 
 			this.bytesWritten += channelContext.write(byteBuffer);
@@ -47,4 +47,7 @@ public class MessageWriter {
 		return this.writeQueue.isEmpty();
 	}
 
+	public int getBytesWritten() {
+		return bytesWritten;
+	}
 }

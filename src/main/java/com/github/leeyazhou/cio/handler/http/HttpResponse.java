@@ -1,9 +1,12 @@
 package com.github.leeyazhou.cio.handler.http;
 
+import com.github.leeyazhou.cio.message.Message;
+
 public class HttpResponse extends HttpObjectBase {
 
 	private HttpStatus status;
 	private HttpResponseBody body;
+	private Message message;
 
 	public HttpResponse() {
 		this(HttpVersion.HTTP_1_1);
@@ -28,7 +31,23 @@ public class HttpResponse extends HttpObjectBase {
 		}
 	}
 
+	@Override
+	public int getContentLength() {
+		if (body != null && body.getBody() != null) {
+			return body.getBody().length;
+		}
+		return super.getContentLength();
+	}
+
 	public HttpResponseBody getBody() {
 		return body;
+	}
+
+	public void setMessage(Message message) {
+		this.message = message;
+	}
+
+	public Message getMessage() {
+		return message;
 	}
 }

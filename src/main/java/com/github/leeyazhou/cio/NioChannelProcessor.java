@@ -42,12 +42,9 @@ public class NioChannelProcessor implements Runnable {
 
 	public NioChannelProcessor(MessageReaderFactory messageReaderFactory) throws IOException {
 		this.inboundChannelQueue = new ArrayBlockingQueue<>(10240);
-
 		this.readMessageBuffer = new MessageBuffer();
 		this.writeMessageBuffer = new MessageBuffer();
-
 		this.messageReaderFactory = messageReaderFactory;
-
 		this.selector = Selector.open();
 	}
 
@@ -116,9 +113,10 @@ public class NioChannelProcessor implements Runnable {
 
 	private void readFromSocket(SelectionKey key) throws IOException {
 		DefaultChannelContext context = (DefaultChannelContext) key.attachment();
-		context.getMessageReader().read(readByteBuffer);
+		MessageReader messageReader = context.getMessageReader();
+		messageReader.read(readByteBuffer);
 
-		List<Message> messages = context.getMessageReader().getMessages();
+		List<Message> messages = messageReader.getMessages();
 		if (messages.size() > 0) {
 			for (Message message : messages) {
 				message.setChannelId(context.getChannel().getId());

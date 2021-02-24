@@ -44,12 +44,12 @@ public class Request implements HttpServletRequest {
 
 	@Override
 	public String getCharacterEncoding() {
-		return null;
+		return httpRequest.getCharacterEncoding();
 	}
 
 	@Override
 	public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
-
+		httpRequest.setCharacterEncoding(env);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class Request implements HttpServletRequest {
 
 	@Override
 	public String getContentType() {
-		return null;
+		return httpRequest.getContentType();
 	}
 
 	@Override
@@ -245,91 +245,76 @@ public class Request implements HttpServletRequest {
 
 	@Override
 	public Enumeration<String> getHeaderNames() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int getIntHeader(String name) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public String getMethod() {
-		// TODO Auto-generated method stub
-		return null;
+		return httpRequest.getMethod().name();
 	}
 
 	@Override
 	public String getPathInfo() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getPathTranslated() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getContextPath() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getQueryString() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getRemoteUser() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isUserInRole(String role) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public Principal getUserPrincipal() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getRequestedSessionId() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getRequestURI() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public StringBuffer getRequestURL() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getServletPath() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public HttpSession getSession(boolean create) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

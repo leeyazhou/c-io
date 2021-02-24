@@ -20,16 +20,9 @@ import com.github.leeyazhou.web.WebLoader;
 public class ServletHandler implements ChannelInboundHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ServletHandler.class);
-	private HttpResponse response;
 	private WebLoader webLoader;
 
 	public ServletHandler() {
-		response = new HttpResponse(HttpVersion.HTTP_1_1);
-		response.addHeader("Content-Length", "38");
-		response.addHeader("Content-Type", "text/html");
-		response.setStatus(HttpStatus.SC_OK);
-		String respnseBody = "<html><body>Hello World!</body></html>";
-		response.setBody(new HttpResponseBody(respnseBody.getBytes()));
 		this.webLoader = new WebLoader();
 		this.webLoader.init();
 	}
@@ -63,12 +56,23 @@ public class ServletHandler implements ChannelInboundHandler {
 		Message responseMessage = MessageBuffer.DEFAULT.newMessage();
 		responseMessage.setChannelId(channelContext.getChannel().getId());
 
-		doWriteMessage(responseMessage, response);
+		HttpResponse httpResponse = newHttpResponse();
 
-		webLoader.execute(httpRequest, response);
+		webLoader.execute(httpRequest, httpResponse);
+
+		doWriteMessage(responseMessage, httpResponse);
 
 		channelContext.write(responseMessage);
+	}
 
+	public HttpResponse newHttpResponse() {
+		HttpResponse response = new HttpResponse(HttpVersion.HTTP_1_1);
+		response.addHeader("Content-Length", "38");
+		response.addHeader("Content-Type", "text/html");
+		response.setStatus(HttpStatus.SC_OK);
+		String respnseBody = "<html><body>Hello World!</body></html>";
+		response.setBody(new HttpResponseBody(respnseBody.getBytes()));
+		return response;
 	}
 
 	static final String lineSepator = "\r\n";
@@ -93,6 +97,7 @@ public class ServletHandler implements ChannelInboundHandler {
 			responseMessage.writeToMessage(lineSepator.getBytes());
 			responseMessage.writeToMessage(lineSepator.getBytes());
 		}
+		logger.info("消息体：{}", new String(response.getBody().getBody()));
 		responseMessage.writeToMessage(response.getBody().getBody());
 	}
 

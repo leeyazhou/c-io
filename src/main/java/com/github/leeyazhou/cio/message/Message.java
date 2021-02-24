@@ -10,7 +10,7 @@ public class Message {
 								// in or out.
 
 	private byte[] sharedArray = null;
-	private int offset = 0; // offset into sharedArray where this message data starts.
+	private int offset = 0; // offset into sharedArray where this message data start.
 	private int capacity = 0; // the size of the section in the sharedArray allocated to this message.
 	private int length = 0; // the number of bytes used of the allocated section.
 

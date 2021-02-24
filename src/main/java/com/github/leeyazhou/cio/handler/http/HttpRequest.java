@@ -1,6 +1,10 @@
 package com.github.leeyazhou.cio.handler.http;
 
+import com.github.leeyazhou.cio.message.Message;
+
 public class HttpRequest extends HttpObjectBase {
+
+	private Message message;
 
 	public HttpRequest() {
 		this(HttpVersion.HTTP_1_1);
@@ -41,6 +45,14 @@ public class HttpRequest extends HttpObjectBase {
 
 	public HttpRequestBody getBody() {
 		return body;
+	}
+
+	public void setMessage(Message message) {
+		this.message = message;
+	}
+
+	public Message getMessage() {
+		return message;
 	}
 
 	@Override

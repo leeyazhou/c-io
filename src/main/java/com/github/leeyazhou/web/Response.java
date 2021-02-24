@@ -6,13 +6,17 @@ import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.leeyazhou.cio.handler.http.HttpResponse;
 
 public class Response implements HttpServletResponse {
-
+	static final Logger logger = LoggerFactory.getLogger(Response.class);
 	private Request request;
 	private HttpResponse httpResponse;
 
@@ -26,42 +30,68 @@ public class Response implements HttpServletResponse {
 
 	@Override
 	public String getCharacterEncoding() {
-		return null;
+		return httpResponse.getCharacterEncoding();
 	}
 
 	@Override
 	public String getContentType() {
-		return null;
+		return httpResponse.getContentType();
 	}
+
+	private ServletOutputStream outputStream;
 
 	@Override
 	public ServletOutputStream getOutputStream() throws IOException {
-		return null;
+		if (outputStream == null) {
+			this.outputStream = new ServletOutputStream() {
+
+				@Override
+				public void write(int b) throws IOException {
+					httpResponse.getBody().write(b);
+				}
+
+				@Override
+				public void setWriteListener(WriteListener writeListener) {
+
+				}
+
+				@Override
+				public boolean isReady() {
+					return true;
+				}
+			};
+		}
+		return outputStream;
 	}
+
+	private PrintWriter writer;
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		return null;
+		if (writer == null) {
+			this.writer = new PrintWriter(getOutputStream());
+		}
+		return writer;
 	}
 
 	@Override
 	public void setCharacterEncoding(String charset) {
-
+		httpResponse.setCharacterEncoding(charset);
 	}
 
 	@Override
 	public void setContentLength(int len) {
-
+		httpResponse.setContentLength(len);
 	}
 
 	@Override
 	public void setContentLengthLong(long len) {
-
+		httpResponse.setContentLength((int) len);
 	}
 
 	@Override
 	public void setContentType(String type) {
-
+		httpResponse.setContentType(type);
 	}
 
 	@Override
@@ -207,6 +237,10 @@ public class Response implements HttpServletResponse {
 	@Override
 	public Collection<String> getHeaderNames() {
 		return null;
+	}
+
+	public Request getRequest() {
+		return request;
 	}
 
 }
